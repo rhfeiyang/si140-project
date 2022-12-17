@@ -1,0 +1,208 @@
+\documentclass{article}
+
+\usepackage{fancyhdr}
+\usepackage{extramarks}
+\usepackage{amsmath}
+\usepackage{amsthm}
+\usepackage{amsfonts}
+\usepackage{tikz}
+\usepackage{listings}
+\usepackage[plain]{algorithm}
+\usepackage{algpseudocode}
+\usepackage{enumerate}
+\usepackage{tikz}
+\usepackage{xifthen}
+\usepackage{xparse}
+\usepackage{amsmath, amssymb}
+\usepackage{lipsum}
+
+\usetikzlibrary{automata,positioning}
+
+%
+% Basic Document Settings
+%  
+
+\topmargin=-0.45in
+\evensidemargin=0in
+\oddsidemargin=0in
+\textwidth=6.5in
+\textheight=9.0in
+\headsep=0.25in
+
+\linespread{1.1}
+
+\pagestyle{fancy}
+\lhead{\hmwkAuthorName}
+\chead{\hmwkClass: \hmwkTitle}
+\rhead{\firstxmark}
+\lfoot{\lastxmark}
+\cfoot{\thepage}
+
+\renewcommand\headrulewidth{0.4pt}
+\renewcommand\footrulewidth{0.4pt}
+
+\setlength\parindent{0pt}
+
+%
+% Create Problem Sections
+%
+
+\newcommand{\enterProblemHeader}[1]{
+    \nobreak\extramarks{}{Problem \arabic{#1} continued on next page\ldots}\nobreak{}
+    \nobreak\extramarks{Problem \arabic{#1} (continued)}{Problem \arabic{#1} continued on next page\ldots}\nobreak{}
+}
+
+\newcommand{\exitProblemHeader}[1]{
+    \nobreak\extramarks{Problem \arabic{#1} (continued)}{Problem \arabic{#1} continued on next page\ldots}\nobreak{}
+    \stepcounter{#1}
+    \nobreak\extramarks{Problem \arabic{#1}}{}\nobreak{}
+}
+
+\newcommand*\circled[1]{\tikz[baseline=(char.base)]{
+		\node[shape=circle,draw,inner sep=2pt] (char) {#1};}}
+
+
+\setcounter{secnumdepth}{0}
+\newcounter{partCounter}
+\newcounter{homeworkProblemCounter}
+\setcounter{homeworkProblemCounter}{1}
+\nobreak\extramarks{Problem \arabic{homeworkProblemCounter}}{}\nobreak{}
+
+%
+% Homework Problem Environment
+%
+% This environment takes an optional argument. When given, it will adjust the
+% problem counter. This is useful for when the problems given for your
+% assignment aren't sequential. See the last 3 problems of this template for an
+% example.
+%
+
+\NewDocumentEnvironment{homeworkProblem}{s m}{
+    \IfBooleanT{#1}{\newpage}
+    \section{Problem \arabic{homeworkProblemCounter} {\small (#2)}}
+    \setcounter{partCounter}{1}
+    \enterProblemHeader{homeworkProblemCounter}
+
+}{
+    \exitProblemHeader{homeworkProblemCounter}
+}
+
+%
+% Homework Details
+%   - Title
+%   - Due date
+%   - Class
+%   - Instructor
+%   - Class number
+%   - Name
+%   - Student ID
+
+\newcommand{\hmwkTitle}{Final Project}
+\newcommand{\hmwkDueDate}{December 31, 2022}
+\newcommand{\hmwkClass}{Probability and Mathematical Statistics}
+\newcommand{\hmwkClassInstructor}{Professor Ziyu Shao}
+
+%\newcommand{\hmwkClassID}{}
+
+\newcommand{\hmwkAuthorName}{Ren Hui, Wanchen Su}
+\newcommand{\hmwkAuthorID}{xxxxxxx, 2021533067}
+
+%
+% Title Page
+%
+
+\title{
+    \vspace{2in}
+    \textmd{\textbf{\hmwkClass:\\  \hmwkTitle}}\\
+    \normalsize\vspace{0.1in}\small{Due\ on\ \hmwkDueDate\ at 11:59am}\\
+   %\vspace{2in}\Huge{\hmwkClassID}\\   
+   \vspace{2in}
+}
+
+\author{
+	Name: \textbf{\hmwkAuthorName} \\
+	Student ID: \hmwkAuthorID}
+\date{}
+
+
+\renewcommand{\part}[1]{\textbf{\large Part (\alph{partCounter})}\stepcounter{partCounter}\\}
+
+%
+% Various Helper Commands
+%
+
+% Useful for algorithms
+\newcommand{\alg}[1]{\textsc{\bfseries \footnotesize #1}}
+% For derivatives
+\newcommand{\deriv}[1]{\frac{\mathrm{d}}{\mathrm{d}x} (#1)}
+% For partial derivatives
+\newcommand{\pderiv}[2]{\frac{\partial}{\partial #1} (#2)}
+% Integral dx
+\newcommand{\dx}{\mathrm{d}x}
+% Alias for the Solution section header
+\newcommand{\solution}{\textbf{\Large Solution}}
+% Probability commands: Expectation, Variance, Covariance, Bias
+\newcommand{\E}{\mathrm{E}}
+\newcommand{\Var}{\mathrm{Var}}
+\newcommand{\Cov}{\mathrm{Cov}}
+\newcommand{\Bias}{\mathrm{Bias}}
+
+\begin{document}
+
+\maketitle
+\pagebreak
+
+% Problem 1
+\begin{homeworkProblem}{Part 1: classical Bandit Algorithms}
+    \solution
+    \begin{enumerate}
+        \item[1,2.]
+        See jupyter notebook.
+        \item[3.]
+        Accorrding to python simulation, the results are repectively:\\
+        results for epsilon-greedy Algorithm:\\
+        $[0.69956534\ 0.50167567\ 0.39846044]$ with parameter: 0.1\\
+        $[0.70064482\ 0.49688743\ 0.39858856]$ with parameter: 0.5\\
+        $[0.70009067\ 0.49985083\ 0.39811366]$ with parameter: 0.9\\
+        results for UCB Algorithm:\\
+        $[0.70088294\ 0.49274932\ 0.38448981]$ with parameter: 1\\
+        $[0.7006747\ 0.49900798\ 0.39886189]$ with parameter: 5\\
+        $[0.70135645\ 0.49877856\ 0.40023188]$ with parameter: 10\\
+        results for TS Algorithm:\\
+        $[0.6995964\ 0.45887541\ 0.37554019]$ with parameter: [[1, 1], [1, 1], [1, 1]]\\
+        $[0.68296885\ 0.4001996\ 0.362563]$ with parameter: [[601, 401], [401, 601], [2, 3]]
+        \item[4.]
+        In the $\epsilon$-greedy algorithm, $\epsilon$ decides the probability of choosing the max estimate of all the arms or choosing a random arm.
+        Which means the larger $\epsilon$ is, the more evenly spread are the tests.\\
+        In the UCB algorithm, the parameter c ...\\
+        If the initial value of $\alpha_j,\beta_j$ we passed in is too small,
+        then the result of the first few tests may influence the final result greatly,
+        and  only a few dozen tests are on the second and third arm. If this happens, the result will be frightfully small.
+        And after 200 independent trials of $N = 5000$, the final estimation still has a great gap with the oracle value.
+        On the other hand, if the initial value of $\alpha_j,\beta_j$ we passed in is relativly large, this value of a and b may influence the final result greatly.
+        As in the trial with parameter [[601, 401], [401, 601], [2, 3]], we can see that the final estimation of arm two is very close to $\frac{401}{401+601}$.
+        More impacts of $\epsilon$, c and $\alpha_j,\beta_j$ concerning exploration-exploitation will be disccussed in 5.
+        \item[5.]
+        In the case of all algorithms, more exploitation means that the total reward we get is larger, while more exploration means
+        the estimated value of the reward of each arm is more accurate, but it also means that the total reward during our tests is less.\\
+        For the $\epsilon$-greedy algorithm, the larger $\epsilon$ is, there is more chance of exploration than exploitation.
+        So while $\epsilon$ grows, the gaps between the algorithm output and the oracle value decreases, but the sum of the reward of all trials is smaller.\\
+        As for the UCB Algorithm, the exploration-exploitation trade-off depends on the value of c.
+        Similar to the $\epsilon$-greedy algorithm, the larger c is, there is more exploration and less exploitation.
+        As can be deduced from the data in the python simulation, for larger c, the estimated value for the third arm is more accurate.
+        However, the estimated value for arms 1 and 2 becomes less accurate. After diccussion, we believe this is because the larger c is, 
+        the more average the tests are. Consiquently, there are more tests on the third arm (it has the smallest oracle value), 
+        but there are less test on the first and second arm.\\
+        The TS Algorithm is rather different from the previous ones. Its exploration is very limited. 
+        The arm selected is always the arm with the greates current reward estimation. So arms with small oracle values may end up being pulled only a few times.
+        Which makes the estimate value of arms 2 and 3 rather inaccurate. But the overall reward gained within the N trials should be the largest of all the algorithms.
+        \item[6.]
+
+    \end{enumerate}
+\end{homeworkProblem}
+\pagebreak
+
+
+
+
+\end{document}
