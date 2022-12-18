@@ -289,10 +289,10 @@ def result_part1(function_idx):
         para = TS_ab
         func = depend_TS
         parameter = "a,b ,cluster:[[1,2],[3]]"
-    elif function_idx == 5:
-        para = TS_ab
-        func = depend_TS_2
-        parameter = "a,b ,cluster:[[1,2],[3]]"
+    # elif function_idx == 5:
+    #     para = TS_ab
+    #     func = depend_TS_2
+    #     parameter = "a,b ,cluster:[[1,2],[3]]"
 
     for p in para:
         result = 0.0
