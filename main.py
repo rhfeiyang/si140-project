@@ -1,6 +1,6 @@
 import random
 import math
-import numpy
+# import numpy
 import copy
 
 # super parameters
@@ -26,6 +26,13 @@ def reward_part1(choose):
     else:
         return 0
 
+def reward_part2(choose,time):
+    # choose: 1,2
+    probability = actual_theta[choose]
+    if (random.uniform(0, 1) < probability):
+        return gamma**time
+    else:
+        return 0
 
 def e_Greedy(N, arms, epsilon):
     # initialize
@@ -171,60 +178,93 @@ def depend_TS(N, arms, ab_original):
     return total_reward
 
 
-def depend_TS_2(N, arms, ab_original):
+# def depend_TS_2(N, arms, ab_original):
+#     total_reward = 0
+#     ab = copy.deepcopy(ab_original)
+#     theta = [0 for i in range(len(arms) + 1)]
+#     # try: one cluster for 1,2 another for 3
+#     cluster = [[1, 2], [3]]
+#     cluster_theta = [ab[0][0] / (2 * (ab[0][0] + ab[0][1])) + ab[1][0] / (2 * (ab[1][0] + ab[1][1])),
+#                      ab[2][0] / (ab[2][0] + ab[2][1])]
+#
+#     for t in range(1, N + 1):
+#
+#         cluster_theta = [ab[0][0] / (2 * (ab[0][0] + ab[0][1])) + ab[1][0] / (2 * (ab[1][0] + ab[1][1])),
+#                          ab[2][0] / (ab[2][0] + ab[2][1])]
+#
+#         for j in arms:
+#             theta[j] = numpy.random.beta(ab[j - 1][0], ab[j - 1][1])
+#
+#         # select cluster
+#         cluster_choose = -1
+#         arg_max = -1
+#         for i, j in enumerate(cluster_theta):
+#             if j > arg_max:
+#                 arg_max = j
+#                 cluster_choose = i
+#
+#         # select and pull arm
+#         arm_choose = -1
+#         arg_max = -1
+#         for i in cluster[cluster_choose]:
+#             if theta[i] > arg_max:
+#                 arm_choose = i
+#                 arg_max = theta[i]
+#
+#         # update distribution
+#         r = reward_part1(arm_choose)
+#         if (arm_choose == 1):
+#             ab[0][0] += r
+#             ab[0][1] += (1 - r)
+#             ab[1][0] += r
+#             ab[1][1] += (1 - r)
+#         elif (arm_choose == 2):
+#             ab[0][0] += r
+#             ab[0][1] += (1 - r)
+#             ab[1][0] += r
+#             ab[1][1] += (1 - r)
+#         elif (arm_choose == 3):
+#             ab[2][0] += r
+#             ab[2][1] += (1 - r)
+#
+#         total_reward += r
+#     # compute the expectation!!
+#     # result = []
+#     # for j in arms:
+#     #     result.append(ab[j - 1][0] / (ab[j - 1][0] + ab[j - 1][1]))
+#     return total_reward
+
+
+def Part2(N,arms):
+    #initialize:
+
+    # I_t = -1
+    count = [0 for i in range(len(arms))]
+    theta = [0.5 for i in range(len(arms))]
+    ab = [[1,1] for arm in arms]
+    # for t in arms:
+    #     theta[t] = np.random.beta(ab[t-1][0],ab[t-1][1])
     total_reward = 0
-    ab = copy.deepcopy(ab_original)
-    theta = [0 for i in range(len(arms) + 1)]
-    # try: one cluster for 1,2 another for 3
-    cluster = [[1, 2], [3]]
-    cluster_theta = [ab[0][0] / (2 * (ab[0][0] + ab[0][1])) + ab[1][0] / (2 * (ab[1][0] + ab[1][1])),
-                     ab[2][0] / (ab[2][0] + ab[2][1])]
+    for t in range(N):
+        #choose and pull arm
 
-    for t in range(1, N + 1):
+        if(theta[0]==theta[1]):
+            I_t=random.randint(0,1)
+        else:
+            I_t = np.argmax(theta)
 
-        cluster_theta = [ab[0][0] / (2 * (ab[0][0] + ab[0][1])) + ab[1][0] / (2 * (ab[1][0] + ab[1][1])),
-                         ab[2][0] / (ab[2][0] + ab[2][1])]
-
-        for j in arms:
-            theta[j] = numpy.random.beta(ab[j - 1][0], ab[j - 1][1])
-
-        # select cluster
-        cluster_choose = -1
-        arg_max = -1
-        for i, j in enumerate(cluster_theta):
-            if j > arg_max:
-                arg_max = j
-                cluster_choose = i
-
-        # select and pull arm
-        arm_choose = -1
-        arg_max = -1
-        for i in cluster[cluster_choose]:
-            if theta[i] > arg_max:
-                arm_choose = i
-                arg_max = theta[i]
-
-        # update distribution
-        r = reward_part1(arm_choose)
-        if (arm_choose == 1):
-            ab[0][0] += r
-            ab[0][1] += (1 - r)
-            ab[1][0] += r
-            ab[1][1] += (1 - r)
-        elif (arm_choose == 2):
-            ab[0][0] += r
-            ab[0][1] += (1 - r)
-            ab[1][0] += r
-            ab[1][1] += (1 - r)
-        elif (arm_choose == 3):
-            ab[2][0] += r
-            ab[2][1] += (1 - r)
-
-        total_reward += r
-    # compute the expectation!!
-    # result = []
-    # for j in arms:
-    #     result.append(ab[j - 1][0] / (ab[j - 1][0] + ab[j - 1][1]))
+        print(I_t)
+        r = reward_part2(I_t,t)
+        total_reward+=r
+        count[I_t] +=1
+        if(r!= 0):
+            ab[I_t][0]+=1
+        else:
+            ab[I_t][1]+=1
+        #更新theta
+        theta = [float(a) / (a + b) for a, b in ab]
+        # for t in arms:
+        #     theta[t] = ab[I_t][0]/(ab[I_t][0]+ab[I_t][1])
     return total_reward
 
 

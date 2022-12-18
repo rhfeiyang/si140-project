@@ -1,13 +1,13 @@
 import random
 import math
-import numpy
+import numpy as np
 import copy
 
 #super parameters
 #actual_theta=[0.7,0.7,0.4]
-actual_theta=[0.7,0.3]
-gamma = 0.9;
-N=5000
+actual_theta=[0.7,0.8]
+gamma = 0.9
+N=25
 trial_times=200
 #arms_part1=[1,2,3]
 arms_part2=[1,2]
@@ -27,7 +27,7 @@ TS_ab=[[[1,1],[1,1],[1,1]],
 
 def reward_part2(choose,time):
     # choose: 1,2
-    probability = actual_theta[choose - 1]
+    probability = actual_theta[choose]
     if (random.uniform(0, 1) < probability):
         return gamma**time
     else:
@@ -35,10 +35,43 @@ def reward_part2(choose,time):
 
 def Part2(N,arms):
     #initialize:
-    I_t = -1
-    count = [0 for i in range(len(arms) + 1)]
-    theta = [0 for i in range(len(arms) + 1)]
+
+    # I_t = -1
+    count = [0 for i in range(len(arms))]
+    theta = [0.5 for i in range(len(arms))]
+    ab = [[1,1] for arm in arms]
+    # for t in arms:
+    #     theta[t] = np.random.beta(ab[t-1][0],ab[t-1][1])
     total_reward = 0
+    for t in range(N):
+        #choose and pull arm
+
+        if(theta[0]==theta[1]):
+            I_t=random.randint(0,1)
+        else:
+            I_t = np.argmax(theta)
+
+        print(I_t)
+        r = reward_part2(I_t,t)
+        total_reward+=r
+        count[I_t] +=1
+        if(r!= 0):
+            ab[I_t][0]+=1
+        else:
+            ab[I_t][1]+=1
+        #更新theta
+        theta = [float(a) / (a + b) for a, b in ab]
+        # for t in arms:
+        #     theta[t] = ab[I_t][0]/(ab[I_t][0]+ab[I_t][1])
+    return total_reward
+
+
+result = 0.0
+# for trial in range(trial_times):
+result += Part2(N,arms_part2)
+# result/=trial_times
+print(result)
+
 
 # def Ucb(N, arms, c):
 #     # note the index start from 1
