@@ -6,7 +6,7 @@ import copy
 # super parameters
 import numpy as np
 
-actual_theta = [0.6,0.7,0.4]
+actual_theta = [0.7,0.7,0.5]
 N = 5000
 trial_times = 200
 arms_part1 = [1, 2, 3]
@@ -146,7 +146,7 @@ def depend_UCB(N, arms, ab_original):
 
 
     cluster_set = [[1, 2], [3]]
-    cluster_count = np.array([1,1])
+    cluster_count = np.array([0,0])
 
     cluster_theta = np.array([0.0, 0.0])
     c = 5
@@ -159,7 +159,8 @@ def depend_UCB(N, arms, ab_original):
         I_t = t
         arm_theta[I_t-1] = reward_part1(I_t)
     for i, cluster in enumerate(cluster_set):
-        cluster_count[i]+=len(cluster_set)
+        cluster_count[i]+=len(cluster)
+        # cluster_count[i] += 1
         cluster_theta[i]+=sum([arm_theta[arm-1] for arm in cluster])/cluster_count[i]
 
     for t in range(1,N+1):
@@ -221,7 +222,7 @@ def Part2(N,arms):
 
 
 def result_part1(function_idx):
-    function = ['epsilon-greedy', 'UCB', 'TS', 'TS-D', 'TS-DD']
+    function = ['epsilon-greedy', 'UCB', 'TS', 'UCB-D', 'TS-DD']
     print("results for", function[function_idx - 1], "Algorithm:")
     para = []
     func = None
