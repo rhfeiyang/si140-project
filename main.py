@@ -86,7 +86,7 @@ def Ucb(N, arms, c):
                 I_t = j
                 arg_max = arg
         count[I_t] += 1
-        print(I_t)
+        #print(I_t)
         r = reward_part1(I_t)
         total_reward += r
         theta[I_t] += (r - theta[I_t]) / count[I_t]
@@ -131,7 +131,7 @@ def TS(N, arms, ab_original):
     return total_reward
 
 
-def depend_TS(N, arms, ab_original):
+def depend_UCB(N, arms, ab_original):
     total_reward = 0
     choose_first_cluster = 0
     ab = copy.deepcopy(ab_original)
@@ -140,32 +140,40 @@ def depend_TS(N, arms, ab_original):
     # try: one cluster for 1,2 another for 3
 
     # cluster_ab=[[ab[0][0]+ab[1][0],ab[0][1]+ab[1][1]],[ab[2][0],ab[2][1]]]
+    
+    arm_theta = np.array([0.0,0.0,0.0])
+    arm_count = np.array([1,1,1])
 
 
     cluster_set = [[1, 2], [3]]
-    cluster_count = []
+    cluster_count = np.array([1,1])
 
     cluster_theta = np.array([0.0, 0.0])
     c = 5
 
+#     for i, cluster in enumerate(cluster_set):
+#         cluster_count.append(sum([sum(ab[arm-1]) for arm in cluster]))
+#         cluster_theta[i]=float(sum([ab[arm-1][0] for arm in cluster]))/cluster_count[i]
+
+    for t in arms:
+        I_t = t
+        arm_theta[I_t-1] = reward_part1(I_t)
     for i, cluster in enumerate(cluster_set):
-        cluster_count.append(sum([sum(ab[arm-1]) for arm in cluster]))
-        cluster_theta[i]=float(sum([ab[arm-1][0] for arm in cluster]))/cluster_count[i]
+        cluster_count[i]+=len(cluster_set)
+        cluster_theta[i]+=sum([arm_theta[arm-1] for arm in cluster])/cluster_count[i]
 
-    cluster_count=np.array(cluster_count)
-
-    for t in range(1, N + 1):
+    for t in range(1,N+1):
         # select cluster
         cluster_choose = np.argmax(cluster_theta + c * np.sqrt(2 * math.log(t) / cluster_count))
 
         # select and pull arm
-        arm_choose = TS_arm_choose([ab[i - 1] for i in cluster_set[cluster_choose]])
-        print('cluster:', cluster_theta)
+        arm_choose = np.argmax(arm_theta + c * np.sqrt(2 * math.log(t) / arm_count))
+        #print('cluster:', cluster_theta)
         # print(arm_choose)
         # update distribution
         r = reward_part1(arm_choose)
-        ab[arm_choose - 1][0] += r
-        ab[arm_choose - 1][1] += (1 - r)
+        arm_count[arm_choose] += 1
+        arm_theta[arm_choose] += 1 / (arm_count[arm_choose]) * (r - arm_theta[arm_choose])
         cluster_count[cluster_choose] += 1
         cluster_theta[cluster_choose] += 1 / (cluster_count[cluster_choose]) * (r - cluster_theta[cluster_choose])
 
@@ -177,62 +185,6 @@ def depend_TS(N, arms, ab_original):
     # print(choose_first_cluster)
     return total_reward
 
-
-# def depend_TS_2(N, arms, ab_original):
-#     total_reward = 0
-#     ab = copy.deepcopy(ab_original)
-#     theta = [0 for i in range(len(arms) + 1)]
-#     # try: one cluster for 1,2 another for 3
-#     cluster = [[1, 2], [3]]
-#     cluster_theta = [ab[0][0] / (2 * (ab[0][0] + ab[0][1])) + ab[1][0] / (2 * (ab[1][0] + ab[1][1])),
-#                      ab[2][0] / (ab[2][0] + ab[2][1])]
-#
-#     for t in range(1, N + 1):
-#
-#         cluster_theta = [ab[0][0] / (2 * (ab[0][0] + ab[0][1])) + ab[1][0] / (2 * (ab[1][0] + ab[1][1])),
-#                          ab[2][0] / (ab[2][0] + ab[2][1])]
-#
-#         for j in arms:
-#             theta[j] = numpy.random.beta(ab[j - 1][0], ab[j - 1][1])
-#
-#         # select cluster
-#         cluster_choose = -1
-#         arg_max = -1
-#         for i, j in enumerate(cluster_theta):
-#             if j > arg_max:
-#                 arg_max = j
-#                 cluster_choose = i
-#
-#         # select and pull arm
-#         arm_choose = -1
-#         arg_max = -1
-#         for i in cluster[cluster_choose]:
-#             if theta[i] > arg_max:
-#                 arm_choose = i
-#                 arg_max = theta[i]
-#
-#         # update distribution
-#         r = reward_part1(arm_choose)
-#         if (arm_choose == 1):
-#             ab[0][0] += r
-#             ab[0][1] += (1 - r)
-#             ab[1][0] += r
-#             ab[1][1] += (1 - r)
-#         elif (arm_choose == 2):
-#             ab[0][0] += r
-#             ab[0][1] += (1 - r)
-#             ab[1][0] += r
-#             ab[1][1] += (1 - r)
-#         elif (arm_choose == 3):
-#             ab[2][0] += r
-#             ab[2][1] += (1 - r)
-#
-#         total_reward += r
-#     # compute the expectation!!
-#     # result = []
-#     # for j in arms:
-#     #     result.append(ab[j - 1][0] / (ab[j - 1][0] + ab[j - 1][1]))
-#     return total_reward
 
 
 def Part2(N,arms):
@@ -286,9 +238,9 @@ def result_part1(function_idx):
         func = TS
         parameter = "a,b"
     elif function_idx == 4:
-        para = TS_ab
-        func = depend_TS
-        parameter = "a,b ,cluster:[[1,2],[3]]"
+        para = UCB_c
+        func = depend_UCB
+        parameter = "c ,cluster:[[1,2],[3]]"
     # elif function_idx == 5:
     #     para = TS_ab
     #     func = depend_TS_2
@@ -302,8 +254,8 @@ def result_part1(function_idx):
         print(result, "with parameter", parameter, "as", p)
 
 
-result_part1(1)
-# result_part1(2)
+# result_part1(1)
+result_part1(2)
 # result_part1(3)
-# result_part1(4)
+result_part1(4)
 # result_part1(5)
