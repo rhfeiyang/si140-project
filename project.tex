@@ -1,0 +1,334 @@
+\documentclass{article}
+
+\usepackage{fancyhdr}
+\usepackage{extramarks}
+\usepackage{amsmath}
+\usepackage{amsthm}
+\usepackage{amsfonts}
+\usepackage{tikz}
+\usepackage{listings}
+%\usepackage[plain]{algorithm}
+\usepackage{algpseudocode}
+\usepackage{enumerate}
+\usepackage{tikz}
+\usepackage{xifthen}
+\usepackage{xparse}
+\usepackage{amsmath, amssymb}
+\usepackage{lipsum}
+\usepackage[lined,boxed,commentsnumbered]{algorithm2e}
+
+\usetikzlibrary{automata,positioning}
+
+%
+% Basic Document Settings
+%  
+
+\topmargin=-0.45in
+\evensidemargin=0in
+\oddsidemargin=0in
+\textwidth=6.5in
+\textheight=9.0in
+\headsep=0.25in
+
+\linespread{1.1}
+
+\pagestyle{fancy}
+\lhead{\hmwkAuthorName}
+\chead{\hmwkClass: \hmwkTitle}
+\rhead{\firstxmark}
+\lfoot{\lastxmark}
+\cfoot{\thepage}
+
+\renewcommand\headrulewidth{0.4pt}
+\renewcommand\footrulewidth{0.4pt}
+
+\setlength\parindent{0pt}
+
+%
+% Create Problem Sections
+%
+
+\newcommand{\enterProblemHeader}[1]{
+    \nobreak\extramarks{}{Problem \arabic{#1} continued on next page\ldots}\nobreak{}
+    \nobreak\extramarks{Problem \arabic{#1} (continued)}{Problem \arabic{#1} continued on next page\ldots}\nobreak{}
+}
+
+\newcommand{\exitProblemHeader}[1]{
+    \nobreak\extramarks{Problem \arabic{#1} (continued)}{Problem \arabic{#1} continued on next page\ldots}\nobreak{}
+    \stepcounter{#1}
+    \nobreak\extramarks{Problem \arabic{#1}}{}\nobreak{}
+}
+
+\newcommand*\circled[1]{\tikz[baseline=(char.base)]{
+		\node[shape=circle,draw,inner sep=2pt] (char) {#1};}}
+
+
+\setcounter{secnumdepth}{0}
+\newcounter{partCounter}
+\newcounter{homeworkProblemCounter}
+\setcounter{homeworkProblemCounter}{1}
+\nobreak\extramarks{Problem \arabic{homeworkProblemCounter}}{}\nobreak{}
+
+%
+% Homework Problem Environment
+%
+% This environment takes an optional argument. When given, it will adjust the
+% problem counter. This is useful for when the problems given for your
+% assignment aren't sequential. See the last 3 problems of this template for an
+% example.
+%
+
+\NewDocumentEnvironment{homeworkProblem}{s m}{
+    \IfBooleanT{#1}{\newpage}
+    \section{Problem \arabic{homeworkProblemCounter} {\small (#2)}}
+    \setcounter{partCounter}{1}
+    \enterProblemHeader{homeworkProblemCounter}
+
+}{
+    \exitProblemHeader{homeworkProblemCounter}
+}
+
+%
+% Homework Details
+%   - Title
+%   - Due date
+%   - Class
+%   - Instructor
+%   - Class number
+%   - Name
+%   - Student ID
+
+\newcommand{\hmwkTitle}{Final Project}
+\newcommand{\hmwkDueDate}{December 31, 2022}
+\newcommand{\hmwkClass}{Probability and Mathematical Statistics}
+\newcommand{\hmwkClassInstructor}{Professor Ziyu Shao}
+
+%\newcommand{\hmwkClassID}{}
+
+\newcommand{\hmwkAuthorName}{Ren Hui, Wanchen Su}
+\newcommand{\hmwkAuthorID}{2021533089, 2021533067}
+
+%
+% Title Page
+%
+
+\title{
+    \vspace{2in}
+    \textmd{\textbf{\hmwkClass:\\  \hmwkTitle}}\\
+    \normalsize\vspace{0.1in}\small{Due\ on\ \hmwkDueDate\ at 11:59am}\\
+   %\vspace{2in}\Huge{\hmwkClassID}\\   
+   \vspace{2in}
+}
+
+\author{
+	Name: \textbf{\hmwkAuthorName} \\
+	Student ID: \hmwkAuthorID}
+\date{}
+
+
+\renewcommand{\part}[1]{\textbf{\large Part (\alph{partCounter})}\stepcounter{partCounter}\\}
+
+%
+% Various Helper Commands
+%
+
+% Useful for algorithms
+\newcommand{\alg}[1]{\textsc{\bfseries \footnotesize #1}}
+% For derivatives
+\newcommand{\deriv}[1]{\frac{\mathrm{d}}{\mathrm{d}x} (#1)}
+% For partial derivatives
+\newcommand{\pderiv}[2]{\frac{\partial}{\partial #1} (#2)}
+% Integral dx
+\newcommand{\dx}{\mathrm{d}x}
+% Alias for the Solution section header
+\newcommand{\solution}{\textbf{\Large Solution}}
+% Probability commands: Expectation, Variance, Covariance, Bias
+\newcommand{\E}{\mathrm{E}}
+\newcommand{\Var}{\mathrm{Var}}
+\newcommand{\Cov}{\mathrm{Cov}}
+\newcommand{\Bias}{\mathrm{Bias}}
+
+\begin{document}
+
+\maketitle
+\pagebreak
+
+% Problem 1
+\begin{homeworkProblem}{Part 1: classical Bandit Algorithms}
+    \solution
+    \begin{enumerate}
+        \item[1,2.]
+        See jupyter notebook.
+        \item[3.]
+        Accorrding to python simulation, the results are:\\
+        \textbf{results for $\epsilon$-greedy:}\\
+        \begin{tabular}[t]{|c|c|c|c|}
+        \hline
+         & $\epsilon$ = 0.1 & $\epsilon$ = 0.5 & $\epsilon$ = 0.9 \\
+        \hline
+        reward & 3415.895 & 3083.32 & 2748.985 \\
+        \hline
+        $\theta$ & $[0.699565\ 0.501675\ 0.398460]$ & $[0.700644\ 0.496887\ 0.398588]$ & $[0.700090\ 0.499850\ 0.398113]$ \\
+        \hline
+        \end{tabular}\\
+
+        \textbf{results for UCB:}\\
+        \begin{tabular}[t]{|c|c|c|c|}
+        \hline
+         & c = 0.1 & c = 0.5 & c = 0.9 \\
+        \hline
+        reward & 3410.44 & 2974.035 & 2824.62 \\
+        \hline
+        $\theta$ & $[0.700882\ 0.492749\ 0.384489]$ & $[0.700674\ 0.499007\ 0.398861]$ & $[0.701356\ 0.498778\ 0.400231]$ \\
+        \hline
+        \end{tabular}\\
+
+        \textbf{results for TS:}\\
+        \begin{tabular}[t]{|c|c|c|}
+        \hline
+         & a,b = [[1, 1], [1, 1], [1, 1]] & a,b = [[601, 401], [401, 601], [2, 3]]\\
+        \hline
+        reward & 3481.33 & 3490.945 \\
+        \hline
+        $\theta$ & $[0.6995964\ 0.45887541\ 0.37554019]$ & $[0.68296885\ 0.4001996\ 0.362563]$ \\
+        \hline
+        \end{tabular}\\
+
+        \item[4.]
+        Oracle value:$$E(r) = 5000\times0.7 = 3500$$
+        \textbf{gap of $\epsilon$-greedy:}\\
+        \begin{tabular}[t]{|c|c|c|c|}
+        \hline
+         & $\epsilon$ = 0.1 & $\epsilon$ = 0.5 & $\epsilon$ = 0.9 \\
+        \hline
+        reward & 3415.895 & 3083.32 & 2748.985 \\
+        \hline
+        gap & 84.105 & 416.68 & 751.015 \\
+        \hline
+        \end{tabular}\\
+
+        \textbf{gap of UCB:}\\
+        \begin{tabular}[t]{|c|c|c|c|}
+        \hline
+         & c = 0.1 & c = 0.5 & c = 0.9 \\
+        \hline
+        reward & 3410.44 & 2974.035 & 2824.62 \\
+        \hline
+        gap & 89.56 & 525.965 & 675.38 \\
+        \hline
+        \end{tabular}\\
+
+        \textbf{gap of TS:}\\
+        \begin{tabular}[t]{|c|c|c|}
+        \hline
+         & a,b = [[1, 1], [1, 1], [1, 1]] & a,b = [[601, 401], [401, 601], [2, 3]]\\
+        \hline
+        reward & 3481.33 & 3490.945 \\
+        \hline
+        gap & 18.67 & 9.905 \\
+        \hline
+        \end{tabular}\\
+
+        As is shown above, with the given parameters, TS Algorithm is the best.\\
+
+        In the $\epsilon$-greedy algorithm, $\epsilon$ decides the probability of choosing the max estimate of all the arms or choosing a random arm.
+        Which means the larger $\epsilon$ is, the more evenly spread are the tests.\\
+        In the UCB algorithm, the parameter c balances the estimation of $\theta_j$, and considers the number of trials on that arm.
+        Increasing c means considering more about the number of test on that arm, which will alow the decision maker(DM) choose some of the less experimented arms.
+        This helps in instances where the number of tests on a arm is quite small and therefore the $\theta$ of that arm is way less than it should be.\\
+        If the initial value of $\alpha_j,\beta_j$ we passed in is too small,
+        then the result of the first few tests may influence the final result greatly,
+        and  only a few dozen tests are on the second and third arm. If this happens, the estimate value of $\theta$ will be rather inaccurate. 
+        At the same time, the aggregated reward will be quite large because the DM spent very little time exploring.
+        On the other hand, if the initial value of $\alpha_j,\beta_j$ we passed in is relativly large, this value of a and b may influence the final result greatly.
+        As in the trial with parameter [[601, 401], [401, 601], [2, 3]], we can see that the final estimation of arm two is very close to $\frac{401}{401+601}$.
+        In this case, the parameter we passed in is correct in which is the arm with the largest oracle value, so the aggregated reward is quite large.
+        However, if the parameter passed in is contradictory to the actual oracle, it will take quite a long time to adjust. Consequently the aggregated reward is smaller.\\
+        More impacts of $\epsilon$, c and $\alpha_j,\beta_j$ concerning exploration-exploitation will be disccussed in 5.
+        \item[5.]
+        In the case of all algorithms, more exploitation means that the total reward we get is larger, but if the estimate of each arm differs too much from the oracle value,
+        after all tests, the total aggregated reward becomes smaller. More exploration means
+        the estimated value of the reward of each arm is more accurate, it helps the decision maker choose the arm better, but the exploration means that the rewards during exploration is less.\\
+        For the $\epsilon$-greedy algorithm, the larger $\epsilon$ is, there is more chance of exploration than exploitation.
+        So while $\epsilon$ grows, the gaps between the algorithm estimate and the oracle value decreases, but the sum of the reward of all trials is smaller because the DM spent too much time exploring when it is not that necessary.\\
+        As for the UCB Algorithm, the exploration-exploitation trade-off depends on the value of c.
+        Similar to the $\epsilon$-greedy algorithm, the larger c is, there is more exploration and less exploitation.
+        As can be deduced from the data in the python simulation, for larger c, the estimated value for the third arm is more accurate.
+        This means that there are more times when the decision maker choose arm c. Consequently, the aggregated rewards over N time slots are less.\\
+        The TS Algorithm is rather different from the previous ones. Its exploration is very limited. 
+        The arm selected is always the arm with the greatest current reward estimation. So arms with small oracle values may end up being pulled only a few times.
+        Which makes the estimate value of arms 2 and 3 rather inaccurate. But the aggregated reward gained over the N trials should be the largest of all the algorithms.
+        TS performs best in this case because the parameters a and b we passed in corresponds with the real oracle value. On the other hand, as the example in 5,
+        if the parameters passed in is inaccurate, it could have a large influence on the aggregated reward. This is a default for having too little exploration.
+        \item[6.]
+        We searched the internet for more information on depend arm bandit problem, and used the thought of the UCB-D algorithm to improve the classical bandit algorithms.
+        With programming and testing, we found that using UCB for choosing the cluster and using TS to choose the specific arm can give a result better than the original TS,
+        which has the best performance in the three classical bandit algorithms. The algorithm we used is shown on the next page.\\
+        \begin{algorithm}[H]
+            \SetAlgoLined
+            Initialize: Beta parameter($\alpha_j$,$\beta_j$),$j\in {1,2,3}$\\
+            $count(C(j)) \leftarrow$ sum of all $\alpha,\beta$ in the cluster.\\
+            $\theta(C(j))\leftarrow$ sum of all $\alpha_j$ in the cluster$/count(C(j))$\\
+            \For(){$t$ = $1,2,\dots , N$}{
+                \#sellect cluseter(using thoughts from UCB algorithm):\\
+                $C(t)\leftarrow arg max(\theta(C(j))+c*\sqrt[]{\frac{2log(t)}{count(C(j))}})$\\
+                \#sellect and pull arm\\
+                \For(){$j\in choosen cluster$}{
+                    Sample $\theta(j)\sim$Beta($\alpha_j,\beta_j$)\\
+                }
+                I(t)$\leftarrow$ arg max$\theta(j)$\\
+                \#update distribution and upper bound $\theta$ of cluster:\\
+                $\alpha_{I(t)}\rightarrow \alpha_{I(t)} + r_{I(t)}$\\
+                $\beta_{I(t)}\rightarrow \beta_{I(t)} + 1 - r_{I(t)}$\\
+                $count(C(t))\leftarrow count(C(t)) + 1$\\
+                $\theta(C(t))\leftarrow \theta(C(t)) + \frac{1}{count(C(t))[r_{I(t)}-\theta(C(t))]}$\\
+            }
+            \caption{Dependent TS}
+          \end{algorithm}
+    \end{enumerate}
+\end{homeworkProblem}
+\pagebreak
+
+\begin{homeworkProblem}{Part 2: Bayesian Bandit Algorithms}
+    \solution
+    \begin{enumerate}
+        \item[1.]
+        See jupyter notebook for the simulation proccess. We simulated with the oracle value :\\
+        \textbf{simulations:}\\
+        \begin{tabular}[t]{|c|c|c|c|}
+        \hline
+        parameter & $\theta_1$ & $\theta_2$ & $\lambda$ \\
+        \hline
+        test 1 & 0.7 & 0.3 & 0.9 \\
+        \hline
+        test 2 & 0.4 & 0.5 & 0.9 \\
+        \hline
+        test 3 & 0.1 & 0. & 0.9 \\
+        \hline
+        \end{tabular}\\
+        Let $r(n)$ be the reward over n pulls.
+        \textbf{simulations:}\\
+        \begin{tabular}[t]{|c|c|c|c|}
+        \hline
+        result & always choose best $E(r(25))$ & simulation $r(25)$ & always choose worst $E(r(n))$ \\
+        \hline
+        test 1 & 6.497471408615705 & 5.758137590942908 & 2.784630603692444 \\
+        \hline
+        test 2 & 4.641051006154074 & 4.247677424676706 & 3.71284080492326 \\
+        \hline
+        test 3 & 2.784630603692444 & 2.2136432344092114 & 0.928210201230815 \\
+        \hline
+        \end{tabular}\\
+        \item[2.]
+        If both $\theta_1$ and $\theta_2$ are relativly large, then we could end up with always pulling the first arm that succeeded.
+        For example, if $\theta_1 = 0.8$, $\theta_2 = 0.9$, and the first arm we pulled is the first one, then there is a large possibility that the DM will always pull arm 1.
+        We used 0.8 and 0.9 as the oracle value and asked the python simulation to print out the arm it chooses each time, and it shows clearly that it almost always sticks with the arm it chose in the first round.
+        In fact, as it turns out, if the two arms have close possibility of giving a reward, this policy tend to behave not that well.
+        \item[3.]
+    \end{enumerate}
+\end{homeworkProblem}
+
+
+
+
+\end{document}
