@@ -6,7 +6,8 @@ import copy
 # super parameters
 import numpy as np
 
-actual_theta = [0.6,0.7,0.5]
+actual_theta = [0.4,0.4,0.6]
+# actual_theta = [0.6,0.6,0.4]
 N = 5000
 trial_times = 200
 arms_part1 = [1, 2, 3]
@@ -75,13 +76,15 @@ def Ucb(N, arms, c):
     for t in arms:
         I_t = t
         count[I_t] = 1
-        theta[I_t] = reward_part1(I_t)
+        r=reward_part1(I_t)
+        theta[I_t]=r
+        total_reward+=r
 
     for t in range(4, N + 1):
         # select and pull arm
 
-        I_t = 1
-        arg_max = 0
+        I_t = -1
+        arg_max = -1
         for j in arms:
             arg = theta[j] + c * math.sqrt(2 * math.log(t) / count[j])
             if arg > arg_max:
@@ -119,7 +122,7 @@ def TS(N, arms, ab_original):
         #         I_t = j
         #         arg_max = theta[j]
         I_t=TS_arm_choose(ab)
-        print(I_t)
+        # print(I_t)
         # update distribution
         r = reward_part1(I_t)
         ab[I_t - 1][0] += r
@@ -158,17 +161,23 @@ def depend_UCB(N, arms, c):
 
     for t in arms:
         I_t = t
-        arm_theta[I_t-1] = reward_part1(I_t)
+        r=reward_part1(I_t)
+        arm_theta[I_t-1] = r
+        total_reward+=r
+
     for i, cluster in enumerate(cluster_set):
         cluster_count[i]+=len(cluster)
         # cluster_count[i] += 1
         # cluster_theta[i]+=sum([arm_theta[arm-1] for arm in cluster])/cluster_count[i]
         cluster_theta[i] = max([arm_theta[arm - 1] for arm in cluster])
 
-    for t in range(1,N+1):
+    for t in range(4,N+1):
         # select cluster
-        # cluster_choose = np.argmax(cluster_theta + c * np.sqrt(2 * math.log(t) / cluster_count))
-        cluster_choose = np.argmax(cluster_theta)
+        # cluster_choose = np.argmax(cluster_theta + c * np.sqrt(2 * math.log(t) / (cluster_count/np.array([len(i) for i in cluster_set]))))
+        cluster_choose = np.argmax(
+            cluster_theta + c * np.sqrt(2 * math.log(t) / cluster_count))
+        # print(cluster_choose)
+        # cluster_choose = np.argmax(cluster_theta)
         # select and pull arm
         arm_choose = -1
         arg_max = -1
@@ -180,6 +189,7 @@ def depend_UCB(N, arms, c):
         #print('cluster:', cluster_theta)
         # print(arm_choose)
         # update distribution
+        # print(arm_choose)
         r = reward_part1(arm_choose+1)
         arm_count[arm_choose] += 1
         arm_theta[arm_choose] += 1 / (arm_count[arm_choose]) * (r - arm_theta[arm_choose])
