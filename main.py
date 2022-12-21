@@ -131,10 +131,9 @@ def TS(N, arms, ab_original):
     return total_reward
 
 
-def depend_UCB(N, arms, ab_original):
+def depend_UCB(N, arms, c):
     total_reward = 0
     choose_first_cluster = 0
-    ab = copy.deepcopy(ab_original)
 
     # use ucb for clusters
     # try: one cluster for 1,2 another for 3
@@ -149,7 +148,7 @@ def depend_UCB(N, arms, ab_original):
     cluster_count = np.array([0,0])
 
     cluster_theta = np.array([0.0, 0.0])
-    c = 5
+    # c = 5
 
 #     for i, cluster in enumerate(cluster_set):
 #         cluster_count.append(sum([sum(ab[arm-1]) for arm in cluster]))
@@ -168,7 +167,13 @@ def depend_UCB(N, arms, ab_original):
         cluster_choose = np.argmax(cluster_theta + c * np.sqrt(2 * math.log(t) / cluster_count))
 
         # select and pull arm
-        arm_choose = np.argmax(arm_theta + c * np.sqrt(2 * math.log(t) / arm_count))
+        arm_choose = 1
+        arg_max = 0
+        for j in cluster_set[cluster_choose]:
+            arg = arm_theta[j-1] + c * math.sqrt(2 * math.log(t) / arm_count[j-1])
+            if arg > arg_max:
+                arm_choose = j-1
+                arg_max = arg
         #print('cluster:', cluster_theta)
         # print(arm_choose)
         # update distribution
