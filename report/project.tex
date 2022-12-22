@@ -273,7 +273,7 @@
                 \#sellect cluseter(using thoughts from UCB algorithm):\\
                 $C(t)\leftarrow arg max(\theta(C(j))+c*\sqrt[]{\frac{2log(t)}{count(C(j))}})$\\
                 \#sellect and pull arm\\
-                \For(){$j\in{1,2,3}$}{
+                \For(){$j\in choosen cluster$}{
                     Sample $\theta(j)\sim$Beta($\alpha_j,\beta_j$)\\
                 }
                 I(t)$\leftarrow$ arg max$\theta(j)$\\
@@ -325,10 +325,25 @@
         We used 0.8 and 0.9 as the oracle value and asked the python simulation to print out the arm it chooses each time, and it shows clearly that it almost always sticks with the arm it chose in the first round.
         In fact, as it turns out, if the two arms have close possibility of giving a reward, this policy tend to behave not that well.
         \item[3.]
+        Story proof:\\
+        Let us be the decision maker(DM) of a two-armed bandit problem. Presume that the experiment lasts forever, 
+        but the reward returned each time is reduced by multiplying $\lambda$, where $0<\lambda<1$. Put in mind that we as DM, 
+        do not know the actual success probability of each arm. So let R($\alpha_1,\beta_1,\alpha_2,\beta_2$)represent the expected reward given the previous success and failures.
+        So accorrding to LOTUS, the expected reward of pulling the first arm is:
+        $$R_1(\alpha_1,\beta_1) = P(success|\alpha_1,\beta_1)\times(\text{reward if succeed})+P(failure|\alpha_1,\beta_1)\times(\text{reward if failure})$$
+        Which is:
+        $$R_1(\alpha_1,\beta_1) = \frac{\alpha_1}{\alpha_1+\alpha_2}(1+\lambda R(\alpha_1+1,\beta_1,\alpha_2,\beta_2))+\frac{\alpha_2}{\alpha_1+\alpha_2}(\lambda R(\alpha_1,\beta_1+1,\alpha_2,\beta_2))$$
+        $R_2$ is similar, the only difference is in the case of arm 2 we should change $\alpha_2$ and $\beta_2$ accorrdingly.
+        Since we will always make the best desision at the moment, $R(\alpha_1,\beta_1,\alpha_2,\beta_2) = max{R_1(\alpha_1,\beta_1),R_2(\alpha_2,\beta_2)}$.
+        Therefore, the given recurrence equation holds.
+        \item[4.]
+        The above recurrence equation can be solved by using dynamic programming in python simulation. We only need to type in the equation and manually set a ending condition,
+        such as count the number of times it has been called repeatedly, and if it exceeds a certain $n$, then the function will return $\frac{\alpha}{\alpha+\beta}$.
+        \item[5.]
+        The optimal policy will be to alter the algorithm in 4 slightly, so that after solving the equation for each decision, the DM will do as is caculated to be the best decision.
+        Then for the next decision the DM will solve the above recurrence equation again.
     \end{enumerate}
 \end{homeworkProblem}
-
-
 
 
 \end{document}
