@@ -336,7 +336,7 @@
         Let us be the decision maker(DM) of a two-armed bandit problem. Presume that the experiment lasts forever, 
         but the reward returned each time is reduced by multiplying $\lambda$, where $0<\lambda<1$. Put in mind that we as DM, 
         do not know the actual success probability of each arm. So let R($\alpha_1,\beta_1,\alpha_2,\beta_2$)represent the expected reward given the previous success and failures.
-        So accorrding to LOTUS, the expected reward of pulling the first arm is:
+        So accorrding to LOTP, the expected reward of pulling the first arm is:
         $$R_1(\alpha_1,\beta_1) = P(success|\alpha_1,\beta_1)\times(\text{reward if succeed})+P(failure|\alpha_1,\beta_1)\times(\text{reward if failure})$$
         Which is:
         $$R_1(\alpha_1,\beta_1) = \frac{\alpha_1}{\alpha_1+\alpha_2}(1+\lambda R(\alpha_1+1,\beta_1,\alpha_2,\beta_2))+\frac{\alpha_2}{\alpha_1+\alpha_2}(\lambda R(\alpha_1,\beta_1+1,\alpha_2,\beta_2))$$
