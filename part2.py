@@ -1,12 +1,16 @@
 import random
+import numpy as np
 
 gamma=0.9
 actual_theta = [0.7, 0.5]
+N = 25
+arms = [1,2]
 
-test_round = 50
+test_round = 40
 # EstimatedReward1 = [[0 for i in range(test_round)] for j in range(test_round)]
 # EstimatedReward2 = [[0 for i in range(test_round)] for j in range(test_round)]
 R_result=[[[[-1 for j4 in range(test_round)] for j3 in range(test_round)] for j2 in range(test_round)] for j1 in range(test_round)]
+R_choose=[[[[-1 for j4 in range(test_round)] for j3 in range(test_round)] for j2 in range(test_round)] for j1 in range(test_round)]
 
 def reward_part2(choose,time):
     # choose: 1,2
@@ -22,8 +26,13 @@ def R(a1, b1, a2, b2):
     if R_result[a1][b1][a2][b2]!=-1:
         return R_result[a1][b1][a2][b2]
     else:
-        R=max(R1(a1,b1,a2,b2), R2(a1,b1,a2,b2))
+        r = [R1(a1,b1,a2,b2),R2(a1,b1,a2,b2)]
+        R=max(r[0],r[1])
         R_result[a1][b1][a2][b2]=R
+        if(r[0]>r[1]):
+            R_choose[a1][b1][a2][b2] = 1
+        else:
+            R_choose[a1][b1][a2][b2] = 2
         return R
 
 def R1(a1, b1, a2, b2):
@@ -89,7 +98,7 @@ def Part2(N,arms):
         else:
             I_t = np.argmax(theta)
 
-        print(I_t)
+        # print(I_t)
         r = reward_part2(I_t,t)
         total_reward+=r
         count[I_t] +=1
@@ -103,4 +112,20 @@ def Part2(N,arms):
         #     theta[t] = ab[I_t][0]/(ab[I_t][0]+ab[I_t][1])
     return total_reward
 
-print(R(1,1,1,1))
+def R_part2(N):
+    total_reward = 0.0
+    a = [1,1]
+    b = [1,1]
+    for n in range(N):
+        arm_choose = R_choose[a[0]][b[0]][a[1]][b[1]]
+        r = reward_part2(arm_choose-1,n)
+        if(r != 0):
+            a[arm_choose-1] += 1
+        else:
+            b[arm_choose-1] += 1
+        total_reward += r
+    return total_reward
+
+# print(R(1,1,1,1))
+print(Part2(N,arms))
+print(R_part2(N))
