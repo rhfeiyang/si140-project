@@ -127,5 +127,10 @@ def R_part2(N):
     return total_reward
 
 # print(R(1,1,1,1))
-print(Part2(N,arms))
-print(R_part2(N))
+result1 = 0
+result2 = 0
+for n in range(100):
+    result1 += Part2(N,arms)
+    result2 += R_part2(N)
+print(result1/100)
+print(result2/100)
