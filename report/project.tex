@@ -310,7 +310,7 @@
         \hline
         test 2 & 0.4 & 0.5 & 0.9 \\
         \hline
-        test 3 & 0.1 & 0. & 0.9 \\
+        test 3 & 0.1 & 0.3 & 0.9 \\
         \hline
         \end{tabular}\\
         Let $r(n)$ be the reward over n pulls.
@@ -346,9 +346,27 @@
         \item[4.]
         The above recurrence equation can be solved by using dynamic programming in python simulation. We only need to type in the equation and manually set a ending condition,
         such as count the number of times it has been called repeatedly, and if it exceeds a certain $n$, then the function will return $\frac{\alpha}{\alpha+\beta}$.
+        See jupyter notebook part2.ipynb for the simulation.
         \item[5.]
-        The optimal policy will be to alter the algorithm in 4 slightly, so that after solving the equation for each decision, the DM will do as is caculated to be the best decision.
-        Then for the next decision the DM will solve the above recurrence equation again.
+        The optimal policy will be to alter the algorithm in 4 slightly, so that after solving the equation with dynamic programming, we will get a 4d matrix, storing the corresponding decision we should make 
+        with the known previous results. It should be noted that in this step, the case where either arm can be choosen must be threated with care. We denoted it as 0, rather than arm1 or 2, 
+        and when the DM sees a 0 in the matirx it randomly chooses an arm to pull every trial. In this way the matix will not effect the DM more than it should.
+        The DM will only need to check the matrix to know the arm it should choose. The simulation for the improved strategy is in part2.ipynb.
+        The result is as below:
+        \textbf{simulations:(results are averaged over 200 trials)}\\
+        \begin{tabular}[t]{|c|c|c|c|}
+        \hline
+        test & actual theta & intuitive policy & Bayesian policy \\
+        \hline
+        test 1 & 0.8 0.3 & 6.526969462197445 & 6.768196035314434 \\
+        \hline
+        test 2 & 0.5 0.7 & 5.889886701348879 & 5.964659433792904 \\
+        \hline
+        test 3 & 0.5 0.5 & 4.61943170363406 & 4.583551188456594 \\
+        \hline
+        \end{tabular}\\
+        *In test three the result has nothing to do with choosing, but only wether the arm gives a reward since both arms has a probability of 0.5.
+        So it shows that the result of both policies still greatly depend on probability, neither is garanteed to yield the best result.
         \item[*6.] reference reading:
         \begin{enumerate}[1]
             \item Richard S. Sutton and Andrew G. Barto, \textsl{Reinforcement Learning: An Introduction}
