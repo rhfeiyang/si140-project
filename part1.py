@@ -9,7 +9,7 @@ import data_loader
 import cython.parallel as parallel
 actual_theta = [0.7, 0.5, 0.4]
 N = 5000
-trial_times = 1
+trial_times = 50
 arms_part1 = [1, 2, 3]
 
 GREEDY_epsilon = [0.1, 0.5, 0.9]
@@ -31,9 +31,11 @@ class P1:
             self.actual_theta=self.loader.means
             self.optArm=self.loader.optArm
             self.arm_num=self.loader.arm_num
-            self.sampler=self.loader.sample
+            self.sampler=self.loader.sampler
+            self.table=self.loader.table
         else:
             self.loader=None
+            self.table=None
             self.actual_theta=actual_theta
             self.optArm=np.argmax(self.actual_theta)
             self.arm_num = len(self.actual_theta)
@@ -87,9 +89,9 @@ class P1:
         for t in range(self.arm_num):
             I_t = t
             count[I_t] = 1
-            theta[I_t] = self.independ_reward(I_t)
+            theta[I_t] = self.sampler(I_t)
             if t==0:
-                UCB_current_regret[t] = actual_theta[self.optArm] - actual_theta[I_t]
+                UCB_current_regret[t] = self.actual_theta[self.optArm] - self.actual_theta[I_t]
             else:
                 UCB_current_regret[t] = UCB_current_regret[t-1] + actual_theta[self.optArm] - actual_theta[I_t]
 
@@ -107,8 +109,8 @@ class P1:
         return total_reward
 
     def depend_Ucb(self, N, c):
-        table=self.loader.table
-        arm_num=self.loader.arm_num
+        table=self.table
+        arm_num=self.arm_num
 
         count = np.array([0]*arm_num)
         theta = np.array([0.]*arm_num)
@@ -331,7 +333,8 @@ class P1:
             print(result, "with parameter", parameter, "as", p)
 
 
-p1 = P1('movie_3.csv')
+# p1 = P1('movie_3.csv')
+p1=P1('dependent_data.csv')
 # p1.result(1)
 p1.result(2)
 # p1.result(3)

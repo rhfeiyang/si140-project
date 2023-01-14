@@ -1,7 +1,7 @@
 import csv
 import random
 actual_theta = [0.7, 0.5, 0.4]
-time=1000
+time=10000
 def reward_part1(choose):
     # choose: 1,2,3
     probability = actual_theta[choose - 1]

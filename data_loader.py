@@ -8,10 +8,44 @@ class Loader:
         self.arm_num=None
         self.means=None
         self.optArm=None
+        self.sampler=None
+        self.path=path
         self.load_data(path)
+
     def load_data(self,path):
-        #csv data
+        self.data=pd.read_csv(path)
+        if 'arm1' in self.data.columns.values:
+            self.load_data_gen()
+        else:
+            self.load_data_movie()
+
+    def load_data_gen(self):
+        path=self.path
         self.data = pd.read_csv(path)
+        self.arm_num = self.data.columns.size
+
+        self.means = [0] * self.arm_num
+        for i in range(self.arm_num):
+            self.means[i] = self.data[self.data.columns[i]].mean()
+        self.optArm = np.argmax(self.means)
+
+        # 0,1,2,...
+        self.table = np.zeros([self.arm_num, self.data.values.max() + 1, self.arm_num])
+        for s_idx, source_arm in enumerate(self.data.columns):
+            for a_idx, aim_arm in enumerate(self.data.columns):
+                for i in range(self.data.values.max() + 1):
+                    if source_arm == aim_arm:
+                        self.table[s_idx][i][a_idx] = i
+                    else:
+                        p_reward = self.data[aim_arm][self.data[source_arm] == i].mean()
+                        if p_reward > 1:
+                            self.table[s_idx][i][a_idx] = 1
+                        else:
+                            self.table[s_idx][i][a_idx] = p_reward
+        self.sampler=self.sample_gen
+
+    def load_data_movie(self):
+        #csv data
         self.arm_num=self.data['genre_col'].max()+1
         self.means=[0]*self.arm_num
         for i in range(self.arm_num):
@@ -28,6 +62,12 @@ class Loader:
                         continue
                     temp=self.data[self.data['genre_col'] == aim & self.data['UserID'].isin(users)]['Rating']
                     self.table[source][score-self.data['Rating'].min()][aim]=temp.mean()
-    def sample(self,choose):
+        self.sampler =self.sample_movie
+
+    def sample_movie(self,choose):
         v= self.data[self.data['genre_col'] == choose]['Rating'].sample(n=1, replace=True)
         return v.values[0]
+
+    def sample_gen(self, choose):
+        reward = self.data[self.data.columns[choose]].sample(n=1, replace=True)
+        return reward.values[0]
