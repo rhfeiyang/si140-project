@@ -145,7 +145,7 @@ class P1:
             if t<arm_num:
                 choose=t
             else:
-                S_bool=count>=(t-1)/arm_num
+                S_bool=(count>=(float(t-1)/arm_num))
                 k_emp_reward=np.max(theta[S_bool])
                 k_emp=np.where(theta==k_emp_reward)[0][0]
                 comp_set=set()
@@ -173,6 +173,9 @@ class P1:
             pseudoReward=table[choose][reward]
             sum_pseudo_reward[:, choose] += pseudoReward
             ave_pseudo_reward[:, choose] = np.divide(sum_pseudo_reward[:, choose], count[choose])
+
+            ave_pseudo_reward[np.arange(arm_num),np.arange(arm_num)]=theta
+
             total_reward+=reward
         global dependent_UCB_regret
         dependent_UCB_regret += d_UCB_current_regret
@@ -356,19 +359,19 @@ p1.result(2)
 p1.result(4)
 
 # proccessing data: taking the mean of regrets
-greedy_regret /= trial_times
-TS_regret /= trial_times
-UCB_regret /= trial_times
-dependent_UCB_regret /= trial_times
-
-# plot
-spacing = 400
-plt.plot(range(0, 5000)[::spacing], greedy_regret[::spacing], label='epsilon-Greedy', color='black', marker='x')
-plt.plot(range(0, 5000)[::spacing], UCB_regret[::spacing], label='UCB', color='red', marker='+')
-plt.plot(range(0, 5000)[::spacing], TS_regret[::spacing], label='TS', color='yellow', marker='o')
-plt.plot(range(0, 5000)[::spacing], dependent_UCB_regret[::spacing], label='C-UCB', color='blue', marker='^')
-plt.legend()
-plt.grid(True, axis='y')
-plt.xlabel('Number of Rounds')
-plt.ylabel('Average Regret')
-plt.show()
+# greedy_regret /= trial_times
+# TS_regret /= trial_times
+# UCB_regret /= trial_times
+# dependent_UCB_regret /= trial_times
+#
+# # plot
+# spacing = 400
+# plt.plot(range(0, 5000)[::spacing], greedy_regret[::spacing], label='epsilon-Greedy', color='black', marker='x')
+# plt.plot(range(0, 5000)[::spacing], UCB_regret[::spacing], label='UCB', color='red', marker='+')
+# plt.plot(range(0, 5000)[::spacing], TS_regret[::spacing], label='TS', color='yellow', marker='o')
+# plt.plot(range(0, 5000)[::spacing], dependent_UCB_regret[::spacing], label='C-UCB', color='blue', marker='^')
+# plt.legend()
+# plt.grid(True, axis='y')
+# plt.xlabel('Number of Rounds')
+# plt.ylabel('Average Regret')
+# plt.show()
