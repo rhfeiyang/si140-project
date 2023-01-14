@@ -3,13 +3,16 @@ import random
 import math
 import copy
 import numpy as np
-import pandas as pd
+# import pandas as pd
 import matplotlib.pyplot as plt
+from Cython import wraparound, boundscheck
+
 import data_loader
 import cython.parallel as parallel
+
 actual_theta = [0.7, 0.5, 0.4]
 N = 5000
-trial_times = 50
+trial_times = 200
 arms_part1 = [1, 2, 3]
 
 GREEDY_epsilon = [0.1, 0.5, 0.9]
@@ -21,7 +24,8 @@ greedy_regret = np.zeros(N+1)
 TS_regret = np.zeros(N+1)
 UCB_regret = np.zeros(N+1)
 dependent_UCB_regret = np.zeros(N+1)
-
+dependent_TS_regret = np.zeros(N+1)
+TS_Gauss_regret=np.zeros(N+1)
 class P1:
 
     def __init__(self, depend_data_path=None):
@@ -33,9 +37,11 @@ class P1:
             self.arm_num=self.loader.arm_num
             self.sampler=self.loader.sampler
             self.table=self.loader.table
+            self.range=self.loader.range
         else:
             self.loader=None
             self.table=None
+            self.range = 1
             self.actual_theta=actual_theta
             self.optArm=np.argmax(self.actual_theta)
             self.arm_num = len(self.actual_theta)
@@ -162,7 +168,12 @@ class P1:
         dependent_UCB_regret += d_UCB_current_regret
         return total_reward
 
-    def TS_arm_choose(self, ab):
+    def TS_sample_Gauss(self,theta,count,beta):
+        std=np.sqrt(float(beta)/(count+1))
+        return np.random.normal(theta,std)
+
+
+    def TS_arm_choose_beta(self, ab):
         theta = [0 for i in ab]
         for i, (a, b) in enumerate(ab):
             theta[i] = np.random.beta(a, b)
@@ -174,13 +185,13 @@ class P1:
         # ab idx start from 0
         ab = copy.deepcopy(ab_original)
         TS_current_regret = np.zeros(N+1)
-        for t in range(1, N + 1):
-            I_t = self.TS_arm_choose(ab)
+        for t in range(N):
+            I_t = self.TS_arm_choose_beta(ab)
             # print(I_t)
             # update distribution
             r = self.sampler(I_t)
-            ab[I_t - 1][0] += r
-            ab[I_t - 1][1] += (1 - r)
+            ab[I_t][0] += r
+            ab[I_t][1] += (1 - r)
             total_reward += r
             if t==0:
                 TS_current_regret[t] = self.actual_theta[self.optArm] - self.actual_theta[I_t]
@@ -195,50 +206,87 @@ class P1:
         TS_regret += TS_current_regret
         return total_reward
 
-    # TODO
-    def depend_TS(self, N, arms, ab_original):
+    def TS_Gauss(self, N, beta):
+        arm_num=self.arm_num
         total_reward = 0
-        choose_first_cluster = 0
-        ab = copy.deepcopy(ab_original)
+        # ab idx start from 0
 
-        # use ucb for clusters
-        # try: one cluster for 1,2 another for 3
-
-        # cluster_ab=[[ab[0][0]+ab[1][0],ab[0][1]+ab[1][1]],[ab[2][0],ab[2][1]]]
-
-        cluster_set = [[1, 2], [3]]
-        cluster_count = []
-
-        cluster_theta = np.array([0.0, 0.0])
-        c = 5
-
-        for i, cluster in enumerate(cluster_set):
-            cluster_count.append(sum([sum(ab[arm - 1]) for arm in cluster]))
-            cluster_theta[i] = float(sum([ab[arm - 1][0] for arm in cluster])) / cluster_count[i]
-
-        cluster_count = np.array(cluster_count)
-
-        for t in range(1, N + 1):
-            # select cluster
-            cluster_choose = np.argmax(cluster_theta + c * np.sqrt(2 * math.log(t) / cluster_count))
-
-            # select and pull arm
-            arm_choose = self.TS_arm_choose([ab[i - 1] for i in cluster_set[cluster_choose]])
-            print('cluster:', cluster_theta)
-            # print(arm_choose)
+        TS_G_current_regret = np.zeros(N + 1)
+        theta = np.array([0.] * arm_num)
+        count = np.array([0] * arm_num)
+        for t in range(N):
+            I_t=np.argmax(self.TS_sample_Gauss(theta,count,beta))
+            # print(I_t)
             # update distribution
-            r = self.independ_reward(arm_choose)
-            ab[arm_choose - 1][0] += r
-            ab[arm_choose - 1][1] += (1 - r)
-            cluster_count[cluster_choose] += 1
-            cluster_theta[cluster_choose] += 1 / (cluster_count[cluster_choose]) * (r - cluster_theta[cluster_choose])
-
+            r = self.sampler(I_t)
+            count[I_t] += 1
+            theta[I_t] += ((r - theta[I_t]) / count[I_t])
             total_reward += r
+            if t==0:
+                TS_G_current_regret[t+1] = self.actual_theta[self.optArm] - self.actual_theta[I_t]
+            else:
+                TS_G_current_regret[t+1] = TS_G_current_regret[t] + self.actual_theta[self.optArm] - self.actual_theta[I_t]
         # compute the expectation!!
         # result = []
         # for j in arms:
         #     result.append(ab[j - 1][0] / (ab[j - 1][0] + ab[j - 1][1]))
         # print(choose_first_cluster)
+        global TS_Gauss_regret
+        TS_Gauss_regret += TS_G_current_regret
+        return total_reward
+
+    # TODO
+    def depend_TS(self, N, beta):
+        table = self.table
+        arm_num = self.arm_num
+
+        theta = np.array([0.] * arm_num)
+        count = np.array([0] * arm_num)
+
+        ave_pseudo_reward = np.array([[np.inf] * arm_num] * arm_num)
+        sum_pseudo_reward = np.array([[0.] * arm_num] * arm_num)
+        d_TS_current_regret = np.zeros(N + 1)
+
+        total_reward = 0
+        for t in range(N):
+            if t<arm_num:
+                choose=t
+            else:
+                S_bool = (count >= (float(t - 1) / arm_num))
+
+                k_emp_reward = np.max(theta[S_bool])
+                k_emp = np.where(theta == k_emp_reward)[0][0]
+                comp_set = set()
+                comp_set.add(k_emp)
+                min_phi = np.min(ave_pseudo_reward[:, S_bool], axis=1)
+                for k in range(arm_num):
+                    if min_phi[k] >= k_emp_reward:
+                        comp_set.add(k)
+
+                sample=self.TS_sample_Gauss(theta,count,beta)
+                comp_idx = {ind: sample[ind] for ind in comp_set}
+                choose = max(comp_idx.items(), key=operator.itemgetter(1))[0]
+            # print(t,choose)
+            if t == 0:
+                d_TS_current_regret[t + 1] = self.actual_theta[self.optArm] - self.actual_theta[choose]
+            else:
+                d_TS_current_regret[t + 1] = d_TS_current_regret[t] + self.actual_theta[self.optArm] - \
+                                              self.actual_theta[choose]
+
+            reward = self.sampler(choose)
+            count[choose] += 1
+            theta[choose] += ((reward - theta[choose]) / count[choose])
+
+            # pseudoReward=table[choose][reward]
+            pseudoReward = table[choose][reward - 1, :]
+            sum_pseudo_reward[:, choose] = sum_pseudo_reward[:, choose] + pseudoReward
+            ave_pseudo_reward[:, choose] = np.divide(sum_pseudo_reward[:, choose], count[choose])
+
+            ave_pseudo_reward[np.arange(arm_num), np.arange(arm_num)] = theta
+
+            total_reward += reward
+        global dependent_TS_regret
+        dependent_TS_regret += d_TS_current_regret
         return total_reward
 
 
@@ -298,9 +346,10 @@ class P1:
     #     # for j in arms:
     #     #     result.append(ab[j - 1][0] / (ab[j - 1][0] + ab[j - 1][1]))
     #     return total_reward
-
+    @boundscheck(False)
+    @wraparound(False)
     def result(self, function_idx):
-        function = ['epsilon-greedy', 'UCB', 'TS', 'D-UCB']
+        function = ['epsilon-greedy', 'UCB', 'TS', 'D-UCB','TS-Gauss', 'D-TS']
         print("results for", function[function_idx - 1], "Algorithm:")
         para = []
         func = None
@@ -320,14 +369,18 @@ class P1:
             para = UCB_c
             func = self.depend_Ucb
             parameter = "c"
-        # elif function_idx == 5:
-        #     para = TS_ab
-        #     func = depend_TS_2
-        #     parameter = "a,b ,cluster:[[1,2],[3]]"
+        elif function_idx == 5:
+            para = [self.range]
+            func = self.TS_Gauss
+            parameter = "Beta"
+        elif function_idx == 6:
+            para = [self.range]
+            func = self.depend_TS
+            parameter = "Beta"
 
         for p in para:
             result = 0.0
-            for trial in parallel.prange(trial_times):
+            for trial in parallel.prange(trial_times, nogil=True,schedule="static", chunksize=1):
                 result += func(N, p)
             result /= trial_times
             print(result, "with parameter", parameter, "as", p)
@@ -336,16 +389,18 @@ class P1:
 # p1 = P1('movie_3.csv')
 p1=P1('dependent_data.csv')
 # p1.result(1)
-p1.result(2)
+# p1.result(2)
 # p1.result(3)
-p1.result(4)
-
-
+# p1.result(4)
+p1.result(5)
+p1.result(6)
 # proccessing data: taking the mean of regrets
 greedy_regret /= trial_times
 TS_regret /= trial_times
 UCB_regret /= trial_times
 dependent_UCB_regret /= trial_times
+dependent_TS_regret /= trial_times
+TS_Gauss_regret/=trial_times
 
 # plot
 spacing = int(N/20)
@@ -353,6 +408,8 @@ plt.plot(range(0, N+1)[::spacing], greedy_regret[::spacing], label='epsilon-Gree
 plt.plot(range(0, N+1)[::spacing], UCB_regret[::spacing], label='UCB', color='red', marker='+')
 plt.plot(range(0, N+1)[::spacing], TS_regret[::spacing], label='TS', color='yellow', marker='o')
 plt.plot(range(0, N+1)[::spacing], dependent_UCB_regret[::spacing], label='D-UCB', color='blue', marker='^')
+plt.plot(range(0, N+1)[::spacing], dependent_TS_regret[::spacing], label='D-TS', color='green', marker='^')
+plt.plot(range(0, N+1)[::spacing], TS_Gauss_regret[::spacing], label='TS-Gauss', color='purple', marker='^')
 plt.legend()
 plt.grid(True, axis='y')
 plt.xlabel('Number of Rounds')

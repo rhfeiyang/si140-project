@@ -9,6 +9,7 @@ class Loader:
         self.means=None
         self.optArm=None
         self.sampler=None
+        self.range=None
         self.path=path
         self.load_data(path)
 
@@ -23,7 +24,7 @@ class Loader:
         path=self.path
         self.data = pd.read_csv(path)
         self.arm_num = self.data.columns.size
-
+        self.range=self.data[self.data.columns[0]].max()-self.data[self.data.columns[0]].min()
         self.means = [0] * self.arm_num
         for i in range(self.arm_num):
             self.means[i] = self.data[self.data.columns[i]].mean()
@@ -47,6 +48,7 @@ class Loader:
     def load_data_movie(self):
         #csv data
         self.arm_num=self.data['genre_col'].max()+1
+        self.range=self.data['Rating'].max()-self.data['Rating'].min()
         self.means=[0]*self.arm_num
         for i in range(self.arm_num):
             self.means[i]=self.data[self.data['genre_col']==i]['Rating'].mean()
