@@ -1,20 +1,25 @@
 import random
 import numpy as np
-import cython.parallel as parallel
-gamma=0.9
-actual_theta = [0.6,0.9]
-N = 50
-arms = [1,2]
+import matplotlib.pyplot as plt
+import cython
 
-test_round = 60
+gamma=0.9
+actual_theta = [0.3, 0.8]
+N = 25
+arms = [1,2]
+actual_best = 2
+
+intuitive_regret = np.zeros(N)
+bayesian_regret = np.zeros(N)
+
+test_round = 50
 # EstimatedReward1 = [[0 for i in range(test_round)] for j in range(test_round)]
 # EstimatedReward2 = [[0 for i in range(test_round)] for j in range(test_round)]
 R_result=[[[[-1 for j4 in range(test_round)] for j3 in range(test_round)] for j2 in range(test_round)] for j1 in range(test_round)]
 R_choose=[[[[-1 for j4 in range(test_round)] for j3 in range(test_round)] for j2 in range(test_round)] for j1 in range(test_round)]
 
 def reward_part2(choose,time):
-    # choose: 1,2
-    assert choose>=0
+    # choose: 0,1
     probability = actual_theta[choose]
     if (random.uniform(0, 1) < probability):
         return gamma**time
@@ -94,6 +99,8 @@ def Part2(N,arms):
     ab = [[1,1] for arm in arms]
 
     total_reward = 0
+    
+    current_regret = np.zeros(N)
 
     for t in range(N):
         #choose and pull arm
@@ -102,8 +109,11 @@ def Part2(N,arms):
             I_t=random.randint(0,1)
         else:
             I_t = np.argmax(theta)
-
-        # print(I_t)
+        if t==0:
+            current_regret[t] = actual_theta[actual_best-1] - actual_theta[I_t]
+        else:
+            current_regret[t] = current_regret[t-1] + actual_theta[actual_best-1] - actual_theta[I_t]
+        print(I_t)
         r = reward_part2(I_t,t)
         total_reward+=r
         count[I_t] +=1
@@ -115,42 +125,41 @@ def Part2(N,arms):
         theta = [float(a) / (a + b) for a, b in ab]
         # for t in arms:
         #     theta[t] = ab[I_t][0]/(ab[I_t][0]+ab[I_t][1])
+    
+    global intuitive_regret
+    intuitive_regret += current_regret
     return total_reward
 
 def R_part2(N):
     total_reward = 0.0
     a = [1,1]
     b = [1,1]
-
-    # for n in range(2):
-    #     r = reward_part2(n, n)
-    #     if (r != 0):
-    #         a[n] += 1
-    #     else:
-    #         b[n] += 1
-    #     total_reward += r
-
+    current_regret = np.zeros(N)
     for n in range(N):
         arm_choose = R_choose[a[0]][b[0]][a[1]][b[1]]
         if arm_choose==0:
             arm_choose=random.randint(1,2)
         # print(arm_choose)
+        if n==0:
+            current_regret[n] = actual_theta[actual_best-1] - actual_theta[arm_choose-1]
+        else:
+            current_regret[n] = current_regret[n-1] + actual_theta[actual_best-1] - actual_theta[arm_choose-1]
         r = reward_part2(arm_choose-1,n)
         if(r != 0):
             a[arm_choose-1] += 1
         else:
             b[arm_choose-1] += 1
         total_reward += r
+    global bayesian_regret
+    bayesian_regret += current_regret
     return total_reward
 
-# print(R(1,1,1,1))
-# print(R1(1,1,1,1),R2(1,1,1,1))
 R(1,1,1,1)
 result1 = 0
 result2 = 0
-times=20000
+times=20
 
-for n in parallel.prange(times):
+for n in range(times):
     result1 += Part2(N,arms)
 
     r2=R_part2(N)
@@ -159,3 +168,15 @@ for n in parallel.prange(times):
 print("actual theta",actual_theta)
 print(result1/times)
 print(result2/times)
+
+bayesian_regret /= times
+intuitive_regret /= times
+
+spacing = 1
+plt.plot(range(0, 25)[::spacing], intuitive_regret[::spacing], label='intuitive', color='black', marker='x')
+plt.plot(range(0, 25)[::spacing], bayesian_regret[::spacing], label='bayesian', color='red', marker='+')
+plt.legend()
+plt.grid(True, axis='y')
+plt.xlabel('Number of Rounds')
+plt.ylabel('Average Regret')
+plt.show()
