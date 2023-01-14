@@ -27,7 +27,7 @@ class Loader:
                     if aim==source:
                         continue
                     temp=self.data[self.data['genre_col'] == aim & self.data['UserID'].isin(users)]['Rating']
-                    self.table[source][score-self.data['Rating'].min()][aim]=temp.mean()+temp.std()
+                    self.table[source][score-self.data['Rating'].min()][aim]=temp.mean()
     def sample(self,choose):
         v= self.data[self.data['genre_col'] == choose]['Rating'].sample(n=1, replace=True)
-        return v
+        return v.values[0]
