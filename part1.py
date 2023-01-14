@@ -5,15 +5,17 @@ import copy
 import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
-
+import data_loader
+import cython.parallel as parallel
 actual_theta = [0.7, 0.5, 0.4]
 actual_best = 1
-N = 100
-trial_times = 200
+N = 5000
+trial_times = 1
 arms_part1 = [1, 2, 3]
 
 GREEDY_epsilon = [0.1, 0.5, 0.9]
-UCB_c = [1, 5, 10]
+# UCB_c = [1, 5, 10]
+UCB_c = [5]
 TS_ab = [[[1, 1], [1, 1], [1, 1]],
          [[601, 401], [401, 601], [2, 3]]]
 
@@ -24,35 +26,12 @@ dependent_UCB_regret = np.zeros(N+1)
 
 class P1:
 
-    def __init__(self, depend_data_path='dependent_data.csv'):
+    def __init__(self, depend_data_path=None):
         self.path = depend_data_path
-        self.load_depend_data()
+        self.loader=data_loader.Loader(depend_data_path)
+        self.actual_theta=self.loader.means
+        self.optArm=self.loader.optArm
 
-    def load_depend_data(self, path=''):
-        if path == '':
-            path = self.path
-        else:
-            self.path = path
-
-        self.data = pd.read_csv(path)
-        self.arm_num=self.data.columns.size
-        #0,1,2,...
-        self.pseudo_reward = np.zeros([self.arm_num,self.data.values.max()+1, self.arm_num])
-        for s_idx,source_arm in enumerate(self.data.columns):
-            for a_idx,aim_arm in enumerate(self.data.columns):
-                for i in range(self.data.values.max()+1):
-                    if source_arm==aim_arm:
-                        self.pseudo_reward[s_idx][i][a_idx]=i
-                    else:
-                        p_reward=self.data[aim_arm][self.data[source_arm]==i].mean()+self.data[aim_arm][self.data[source_arm]==i].std()
-                        if p_reward>1:
-                            self.pseudo_reward[s_idx][i][a_idx] = 1
-                        else:
-                            self.pseudo_reward[s_idx][i][a_idx]=p_reward
-
-    def depend_reward(self,choose):
-        reward=self.data[self.data.columns[choose-1]].sample(n=1,replace=True)
-        return reward
 
     def independ_reward(self, choose):
         # choose: 1,2,3
@@ -124,15 +103,16 @@ class P1:
             r = self.depend_reward(I_t).values[0]
             total_reward += r
             theta[I_t] += (r - theta[I_t]) / count[I_t]
-            UCB_current_regret[t] = UCB_current_regret[t-1] + actual_theta[actual_best-1] - actual_theta[I_t-1]
-
+            # UCB_current_regret[t] = UCB_current_regret[t-1] + actual_theta[actual_best-1] - actual_theta[I_t-1]
+            UCB_current_regret[t] = UCB_current_regret[t - 1] + self.true_means_test[self.optArm] - self.true_means_test[I_t-1]
         global UCB_regret
         UCB_regret += UCB_current_regret
         return total_reward
 
     def depend_Ucb(self, N, arms, c):
-        table=self.pseudo_reward
-        arm_num=self.arm_num
+        table=self.loader.table
+        arm_num=self.loader.arm_num
+
         count = np.array([0]*arm_num)
         theta = np.array([0.]*arm_num)
         ucb_idx=dict(zip(range(arm_num),[np.inf]*arm_num))
@@ -159,10 +139,11 @@ class P1:
                 choose=max(comp_idx.items(),key=operator.itemgetter(1))[0]
             # print(t,choose)
             if t==0:
-                d_UCB_current_regret[t+1] = actual_theta[actual_best-1] - actual_theta[choose]
+                d_UCB_current_regret[t+1] = self.actual_theta[self.optArm] - self.actual_theta[choose]
             else:
-                d_UCB_current_regret[t+1] = d_UCB_current_regret[t] + actual_theta[actual_best-1] - actual_theta[choose]
-            reward=self.depend_reward(choose+1).values[0]
+                d_UCB_current_regret[t+1] = d_UCB_current_regret[t] + self.actual_theta[self.optArm] - self.actual_theta[choose]
+
+            reward=self.loader.sample(choose).values[0]
             count[choose]+=1
             theta[choose]+=((reward-theta[choose])/count[choose])
 
@@ -170,8 +151,9 @@ class P1:
                 if (count[arm] > 0):
                     ucb_idx[arm] = theta[arm] + c * np.sqrt(2 * np.log(t + 1) / count[arm])
 
-            pseudoReward=table[choose][reward]
-            sum_pseudo_reward[:, choose] += pseudoReward
+            # pseudoReward=table[choose][reward]
+            pseudoReward = table[choose][reward - 1,:]
+            sum_pseudo_reward[:, choose] = sum_pseudo_reward[:, choose]+ pseudoReward
             ave_pseudo_reward[:, choose] = np.divide(sum_pseudo_reward[:, choose], count[choose])
 
             ave_pseudo_reward[np.arange(arm_num),np.arange(arm_num)]=theta
@@ -346,15 +328,15 @@ class P1:
 
         for p in para:
             result = 0.0
-            for trial in range(trial_times):
+            for trial in parallel.prange(trial_times):
                 result += func(N, arms_part1, p)
             result /= trial_times
             print(result, "with parameter", parameter, "as", p)
 
 
-p1 = P1('dependent_data.csv')
+p1 = P1('movie_3.csv')
 # p1.result(1)
-p1.result(2)
+# p1.result(2)
 # p1.result(3)
 p1.result(4)
 
