@@ -12,10 +12,10 @@ def reward_part1(choose):
 
 with open('dependent_data.csv', 'w', newline='') as csvfile:
     writer = csv.writer(csvfile)
-    writer.writerow(['time slot'] + ['arm1']+['arm2']+['arm3'])
+    writer.writerow( ['arm1']+['arm2']+['arm3'])
     for t in range(time):
         r1=reward_part1(1)
         r2 =reward_part1(2)
         r3 = reward_part1(3)
-        writer.writerow([t]+[r1] + [r2] + [r3])
+        writer.writerow([r1] + [r2] + [r3])
 
