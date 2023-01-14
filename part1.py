@@ -150,8 +150,9 @@ class P1:
                 k_emp=np.where(theta==k_emp_reward)[0][0]
                 comp_set=set()
                 comp_set.add(k_emp)
+                min_phi = np.min(ave_pseudo_reward[:, S_bool], axis=1)
                 for k in range(arm_num):
-                    if k!=k_emp and ave_pseudo_reward[k].mean()>= theta[k_emp]:
+                    if min_phi[k]>= k_emp_reward:
                         comp_set.add(k)
 
                 comp_idx={ind: ucb_idx[ind] for ind in comp_set}
@@ -164,11 +165,14 @@ class P1:
             reward=self.depend_reward(choose+1).values[0]
             count[choose]+=1
             theta[choose]+=((reward-theta[choose])/count[choose])
-            ucb_idx[choose]=theta[choose]+c * math.sqrt(2 * math.log(t+1) / count[choose])
+
+            for arm in range(arm_num):
+                if (count[arm] > 0):
+                    ucb_idx[arm] = theta[arm] + c * np.sqrt(2 * np.log(t + 1) / count[arm])
 
             pseudoReward=table[choose][reward]
-            sum_pseudo_reward[:,choose]= sum_pseudo_reward[:,choose]+pseudoReward
-            ave_pseudo_reward=np.divide(sum_pseudo_reward,count[choose])
+            sum_pseudo_reward[:, choose] += pseudoReward
+            ave_pseudo_reward[:, choose] = np.divide(sum_pseudo_reward[:, choose], count[choose])
             total_reward+=reward
         global dependent_UCB_regret
         dependent_UCB_regret += d_UCB_current_regret
@@ -331,7 +335,7 @@ class P1:
         elif function_idx == 4:
             para = UCB_c
             func = self.depend_Ucb
-            parameter = "a,b"
+            parameter = "c"
         # elif function_idx == 5:
         #     para = TS_ab
         #     func = depend_TS_2
