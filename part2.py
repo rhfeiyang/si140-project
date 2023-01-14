@@ -1,10 +1,10 @@
 import random
 import numpy as np
 import matplotlib.pyplot as plt
-import cython
+import cython.parallel as parallel
 
 gamma=0.9
-actual_theta = [0.3, 0.8]
+actual_theta = [0.7, 0.9]
 N = 25
 arms = [1,2]
 actual_best = 2
@@ -113,7 +113,7 @@ def Part2(N,arms):
             current_regret[t] = actual_theta[actual_best-1] - actual_theta[I_t]
         else:
             current_regret[t] = current_regret[t-1] + actual_theta[actual_best-1] - actual_theta[I_t]
-        print(I_t)
+        # print(I_t)
         r = reward_part2(I_t,t)
         total_reward+=r
         count[I_t] +=1
@@ -157,9 +157,9 @@ def R_part2(N):
 R(1,1,1,1)
 result1 = 0
 result2 = 0
-times=20
+times=2000
 
-for n in range(times):
+for n in parallel.prange(times):
     result1 += Part2(N,arms)
 
     r2=R_part2(N)
