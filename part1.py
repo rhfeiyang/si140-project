@@ -4,8 +4,10 @@ import math
 import copy
 import numpy as np
 import pandas as pd
+import matplotlib.pyplot as plt
 
 actual_theta = [0.7, 0.5, 0.4]
+actual_best = 1
 N = 100
 trial_times = 200
 arms_part1 = [1, 2, 3]
@@ -15,6 +17,10 @@ UCB_c = [1, 5, 10]
 TS_ab = [[[1, 1], [1, 1], [1, 1]],
          [[601, 401], [401, 601], [2, 3]]]
 
+greedy_regret = np.zeros(N+1)
+TS_regret = np.zeros(N+1)
+UCB_regret = np.zeros(N+1)
+dependent_UCB_regret = np.zeros(N+1)
 
 class P1:
 
@@ -63,6 +69,7 @@ class P1:
         count = [0 for i in range(len(arms) + 1)]
         total_reward = 0
         I_t = -1
+        greedy_current_regret = np.zeros(N+1)
 
         for t in range(1, N + 1):
             # I_t=1,2,3...
@@ -77,6 +84,12 @@ class P1:
             r = self.independ_reward(I_t)
             total_reward += r
             theta[I_t] += (1 / count[I_t]) * (r - theta[I_t])
+            if t==0:
+                greedy_current_regret[t] = actual_theta[actual_best-1] - actual_theta[I_t-1]
+            else:
+                greedy_current_regret[t] = greedy_current_regret[t-1] + actual_theta[actual_best-1] - actual_theta[I_t-1]
+        global greedy_regret
+        greedy_regret += greedy_current_regret
         return total_reward
 
     def Ucb(self, N, arms, c):
@@ -85,12 +98,17 @@ class P1:
         count = [0 for i in range(len(arms) + 1)]
         theta = [0 for i in range(len(arms) + 1)]
         total_reward = 0
+        UCB_current_regret = np.zeros(N+1)
 
         # initialize
         for t in arms:
             I_t = t
             count[I_t] = 1
             theta[I_t] = self.independ_reward(I_t)
+            if t==0:
+                UCB_current_regret[t] = actual_theta[actual_best-1] - actual_theta[I_t-1]
+            else:
+                UCB_current_regret[t] = UCB_current_regret[t-1] + actual_theta[actual_best-1] - actual_theta[I_t-1]
 
         for t in range(4, N + 1):
             # select and pull arm
@@ -103,12 +121,13 @@ class P1:
                     I_t = j
                     arg_max = arg
             count[I_t] += 1
-            # print(I_t)
             r = self.depend_reward(I_t).values[0]
             total_reward += r
             theta[I_t] += (r - theta[I_t]) / count[I_t]
+            UCB_current_regret[t] = UCB_current_regret[t-1] + actual_theta[actual_best-1] - actual_theta[I_t-1]
 
-            # theta[I_t] += (reward_part1(I_t) - theta[I_t]) / count[I_t]
+        global UCB_regret
+        UCB_regret += UCB_current_regret
         return total_reward
 
     def depend_Ucb(self, N, arms, c):
@@ -119,6 +138,7 @@ class P1:
         ucb_idx=dict(zip(range(arm_num),[np.inf]*arm_num))
         ave_pseudo_reward=np.array([[np.inf]*arm_num]*arm_num)
         sum_pseudo_reward=np.array([[0.]*arm_num]*arm_num)
+        d_UCB_current_regret = np.zeros(N+1)
 
         total_reward = 0
         for t in range(N):
@@ -137,6 +157,10 @@ class P1:
                 comp_idx={ind: ucb_idx[ind] for ind in comp_set}
                 choose=max(comp_idx.items(),key=operator.itemgetter(1))[0]
             # print(t,choose)
+            if t==0:
+                d_UCB_current_regret[t] = actual_theta[actual_best-1] - actual_theta[choose-1]
+            else:
+                d_UCB_current_regret[t] = d_UCB_current_regret[t-1] + actual_theta[actual_best-1] - actual_theta[choose-1]
             reward=self.depend_reward(choose+1).values[0]
             count[choose]+=1
             theta[choose]+=((reward-theta[choose])/count[choose])
@@ -146,6 +170,8 @@ class P1:
             sum_pseudo_reward[:,choose]= sum_pseudo_reward[:,choose]+pseudoReward
             ave_pseudo_reward=np.divide(sum_pseudo_reward,count[choose])
             total_reward+=reward
+        global dependent_UCB_regret
+        dependent_UCB_regret += d_UCB_current_regret
         return total_reward
 
     def TS_arm_choose(self, ab):
@@ -159,6 +185,7 @@ class P1:
         total_reward = 0
         # ab idx start from 0
         ab = copy.deepcopy(ab_original)
+        TS_current_regret = np.zeros(N+1)
         for t in range(1, N + 1):
             I_t = self.TS_arm_choose(ab)
             # print(I_t)
@@ -167,11 +194,17 @@ class P1:
             ab[I_t - 1][0] += r
             ab[I_t - 1][1] += (1 - r)
             total_reward += r
+            if t==0:
+                TS_current_regret[t] = actual_theta[actual_best-1] - actual_theta[I_t-1]
+            else:
+                TS_current_regret[t] = TS_current_regret[t-1] + actual_theta[actual_best-1] - actual_theta[I_t-1]
         # compute the expectation!!
         # result = []
         # for j in arms:
         #     result.append(ab[j - 1][0] / (ab[j - 1][0] + ab[j - 1][1]))
         # print(choose_first_cluster)
+        global TS_regret
+        TS_regret += TS_current_regret
         return total_reward
 
     # TODO
@@ -317,3 +350,21 @@ p1 = P1('dependent_data.csv')
 p1.result(2)
 # p1.result(3)
 p1.result(4)
+
+# proccessing data: taking the mean of regrets
+greedy_regret /= trial_times
+TS_regret /= trial_times
+UCB_regret /= trial_times
+dependent_UCB_regret /= trial_times
+
+# plot
+spacing = 400
+plt.plot(range(0, 5000)[::spacing], greedy_regret[::spacing], label='epsilon-Greedy', color='black', marker='x')
+plt.plot(range(0, 5000)[::spacing], UCB_regret[::spacing], label='UCB', color='red', marker='+')
+plt.plot(range(0, 5000)[::spacing], TS_regret[::spacing], label='TS', color='yellow', marker='o')
+plt.plot(range(0, 5000)[::spacing], dependent_UCB_regret[::spacing], label='C-UCB', color='blue', marker='^')
+plt.legend()
+plt.grid(True, axis='y')
+plt.xlabel('Number of Rounds')
+plt.ylabel('Average Regret')
+plt.show()
