@@ -261,35 +261,52 @@
         TS performs best in this case because the parameters a and b we passed in corresponds with the real oracle value. On the other hand, as the example in 5,
         if the parameters passed in is inaccurate, it could have a large influence on the aggregated reward. This is a default for having too little exploration.
         \item[6.]
-        We searched the internet for more information on depend arm bandit problem, and used the thought of the UCB-D algorithm to improve the classical bandit algorithms.
+        We searched the internet for more information on depend arm bandit problem, and used the thought of the c-UCB algorithm in a paper(see part 1 reference reading 3) to improve the classical bandit algorithms.
+        \begin{enumerate}
+            \item[a.] Data choice:
+            After research, we found that the dependent multiarm bandit problem is often used in machine learning to decide which items to promote for each user.
+            Considering this common goal, we decided that generating random data on this problem has less meaning to real-life applications of this problem, 
+            and it is rather difficult to make the generated data reasonable and representitive.
+            So we considered the real-life application of the dependent multi-arm bandit problem, more specifically, the problem of movie promotion.
+            For app designers, they want to push book advertisments accorrding to user preference, and user preference is linked to certain traits of the user in question.
+            We downloaded a dataset of viewer ratings on movies. The choice of movie we push for the viewer is the arm we choose, and the viewer's final rating is the reward.
+            To match a three arm bandit machine, we first implemented the dependent algorightm on choosing three movies to promote. Afterwards we also tried the broader version of 18 movies.
+            \item[b.] Performance evaluation:
+            To make the result more clear, we use expected regret ($E[Reg(T)]$) to analize the performance of our algorithm.
+            The regret of an algorithm is defined as the difference between the cumulative reward of a genie policy, that always pulls the optimal arm, and the cumulative reward obtained by the algorithm over T rounds.
+            So obviously its expectation in each round is the difference between the mean reward of the best arm and the mean reward of the choosen arm.
+            \item[c.] Dependent bandit algorithm:
+            
+        \end{enumerate}
         With programming and testing, we found that using UCB for choosing the cluster and using TS to choose the specific arm can give a result better than the original TS,
-        which has the best performance in the three classical bandit algorithms. The algorithm we used is shown on the next page.\\
-        \begin{algorithm}[H]
-            \SetAlgoLined
-            Initialize: Beta parameter($\alpha_j$,$\beta_j$),$j\in {1,2,3}$\\
-            $count(C(j)) \leftarrow$ sum of all $\alpha,\beta$ in the cluster.\\
-            $\theta(C(j))\leftarrow$ sum of all $\alpha_j$ in the cluster$/count(C(j))$\\
-            \For(){$t$ = $1,2,\dots , N$}{
-                \#sellect cluseter(using thoughts from UCB algorithm):\\
-                $C(t)\leftarrow arg max(\theta(C(j))+c*\sqrt[]{\frac{2log(t)}{count(C(j))}})$\\
-                \#sellect and pull arm\\
-                \For(){$j\in choosen cluster$}{
-                    Sample $\theta(j)\sim$Beta($\alpha_j,\beta_j$)\\
-                }
-                I(t)$\leftarrow$ arg max$\theta(j)$\\
-                \#update distribution and upper bound $\theta$ of cluster:\\
-                $\alpha_{I(t)}\rightarrow \alpha_{I(t)} + r_{I(t)}$\\
-                $\beta_{I(t)}\rightarrow \beta_{I(t)} + 1 - r_{I(t)}$\\
-                $count(C(t))\leftarrow count(C(t)) + 1$\\
-                $\theta(C(t))\leftarrow \theta(C(t)) + \frac{1}{count(C(t))[r_{I(t)}-\theta(C(t))]}$\\
-            }
-            \caption{Dependent TS}
-          \end{algorithm}
+        which has the best performance in the three classical bandit algorithms. The algorithm we used is shown on the next page.
+        % \begin{algorithm}[H]
+        %     \SetAlgoLined
+        %     Initialize: Beta parameter($\alpha_j$,$\beta_j$),$j\in {1,2,3}$\\
+        %     $count(C(j)) \leftarrow$ sum of all $\alpha,\beta$ in the cluster.\\030731
+        %     $\theta(C(j))\leftarrow$ sum of all $\alpha_j$ in the cluster$/count(C(j))$\\
+        %     \For(){$t$ = $1,2,\dots , N$}{
+        %         \#sellect cluseter(using thoughts from UCB algorithm):\\
+        %         $C(t)\leftarrow arg max(\theta(C(j))+c*\sqrt[]{\frac{2log(t)}{count(C(j))}})$\\
+        %         \#sellect and pull arm\\
+        %         \For(){$j\in choosen cluster$}{
+        %             Sample $\theta(j)\sim$Beta($\alpha_j,\beta_j$)\\
+        %         }
+        %         I(t)$\leftarrow$ arg max$\theta(j)$\\
+        %         \#update distribution and upper bound $\theta$ of cluster:\\
+        %         $\alpha_{I(t)}\rightarrow \alpha_{I(t)} + r_{I(t)}$\\
+        %         $\beta_{I(t)}\rightarrow \beta_{I(t)} + 1 - r_{I(t)}$\\
+        %         $count(C(t))\leftarrow count(C(t)) + 1$\\
+        %         $\theta(C(t))\leftarrow \theta(C(t)) + \frac{1}{count(C(t))[r_{I(t)}-\theta(C(t))]}$\\
+        %     }
+        %     \caption{Dependent TS}
+        %   \end{algorithm}
         \item[*7.] reference reading:
         \begin{enumerate}[1]
             \item https://zhuanlan.zhihu.com/p/84140092, https://zhuanlan.zhihu.com/p/84200578, \\
             https://zhuanlan.zhihu.com/p/84338172
             \item Rahul Singh, Fang Liu, Yin Sun, Ness Shroff, \textsl{Multi-Armed Bandits with Dependent Arms}
+            \item Samarth Gupta, Shreyas Chaudhari, Gauri Joshi, Osman Yağan, \textsl{Multi-Armed Bandits with Correlated Arms}
 
         \end{enumerate}
     \end{enumerate}
