@@ -265,42 +265,39 @@
         \begin{enumerate}
             \item[a.] Data choice:
             After research, we found that the dependent multiarm bandit problem is often used in machine learning to decide which items to promote for each user.
-            Considering this common goal, we decided that generating random data on this problem has less meaning to real-life applications of this problem, 
-            and it is rather difficult to make the generated data reasonable and representitive.
-            So we considered the real-life application of the dependent multi-arm bandit problem, more specifically, the problem of movie promotion.
+            So besides using computer generated data to test our dependent bandit algorithm, we also used authentic data downloaded from the internet.
+            We considered the real-life application of the dependent multi-arm bandit problem, more specifically, the problem of movie promotion.
             For app designers, they want to push book advertisments accorrding to user preference, and user preference is linked to certain traits of the user in question.
             We downloaded a dataset of viewer ratings on movies. The choice of movie we push for the viewer is the arm we choose, and the viewer's final rating is the reward.
-            To match a three arm bandit machine, we first implemented the dependent algorightm on choosing three movies to promote. Afterwards we also tried the broader version of 18 movies.
+            To match a three arm bandit machine, we first implemented the dependent algorithm on choosing three movies to promote. Afterwards we also tried the broader version of 18 movies.
             \item[b.] Performance evaluation:
             To make the result more clear, we use expected regret ($E[Reg(T)]$) to analize the performance of our algorithm.
             The regret of an algorithm is defined as the difference between the cumulative reward of a genie policy, that always pulls the optimal arm, and the cumulative reward obtained by the algorithm over T rounds.
             So obviously its expectation in each round is the difference between the mean reward of the best arm and the mean reward of the choosen arm.
-            \item[c.] Dependent bandit algorithm:
-            
+            \item[c.] Dependency:
+            After proccessing the data, we obtained pseudo-rewards, which provids an upper bound on the conditional expectation of a arm l given that we have recieved an reward r at another arm k.
+            We use the defination of pseudo-rewards from the paper "Multi-Armed Bandits with Correlated Arms", which is: "Suppose we pull arm k and observe reward r, then the pseudo-reward of arm l with respect to arm k, denoted by $s_{l,k}(r)$, 
+            is an upper bound on the conditional expected reward of arm l, i.e.,$$E[R_l|R_k = r]\leqslant s_{l,k}(r)$$ without loss of generality, we define $s_{l,l}(r)=r$."
+            This information can be obtained in practice through either domain/expert knowledge or from controlled surveys. 
+            Similarly, define $\phi_{l,k} = E[s_{l,k}(R_k)]$.
+            \item[d.] Dependent bandit algorithm:
+            We realized both the dependent UCB algorithm and the dependent TS algorithm. Since both is similar in principle, we will mainly disccuss the dependent UCB algorithm.\\
+            The basic idea is to use dependency to eliminate some of the less competitive arms, so there are less choice each round, and the choices are closer to the best choice.\\
+            \textbf{Step 1: Identify the set of significant arms} The set of significant arms at round t $S_t$ is defined to be the set of arms that have at least $t/arms$ samples.
+            In other words, $S_t$ is the set of arms that have relativly large number of samples. So we will use the data of these arms to eliminate less competitive arms by dependency.\\
+            \textbf{Step 2: Identify the set of competitive arms} First, find the largest estimated theta value so far by UCB(or TS) algorithm. Let that arm or the few arms that have the best theta be $C_t$ Then, for each arm l, find the smallest $\phi_{l,k}$ with $k\in S_t$.
+            If this value is less than the largest estimated theta value so far, then this arm l is not competitive. Note that the $\phi$ value changes at each round so arm l is not eliminated forever.
+            Denote the set of all competitive arms to be $A_t$\\
+            \textbf{Step 3: Use bandit algorithm on $A_t\cup C_t$} Accorrding to the steps above, $A_t\cup C_t$ is the set of all competitive arms at round t.
         \end{enumerate}
-        With programming and testing, we found that using UCB for choosing the cluster and using TS to choose the specific arm can give a result better than the original TS,
-        which has the best performance in the three classical bandit algorithms. The algorithm we used is shown on the next page.
-        % \begin{algorithm}[H]
-        %     \SetAlgoLined
-        %     Initialize: Beta parameter($\alpha_j$,$\beta_j$),$j\in {1,2,3}$\\
-        %     $count(C(j)) \leftarrow$ sum of all $\alpha,\beta$ in the cluster.\\030731
-        %     $\theta(C(j))\leftarrow$ sum of all $\alpha_j$ in the cluster$/count(C(j))$\\
-        %     \For(){$t$ = $1,2,\dots , N$}{
-        %         \#sellect cluseter(using thoughts from UCB algorithm):\\
-        %         $C(t)\leftarrow arg max(\theta(C(j))+c*\sqrt[]{\frac{2log(t)}{count(C(j))}})$\\
-        %         \#sellect and pull arm\\
-        %         \For(){$j\in choosen cluster$}{
-        %             Sample $\theta(j)\sim$Beta($\alpha_j,\beta_j$)\\
-        %         }
-        %         I(t)$\leftarrow$ arg max$\theta(j)$\\
-        %         \#update distribution and upper bound $\theta$ of cluster:\\
-        %         $\alpha_{I(t)}\rightarrow \alpha_{I(t)} + r_{I(t)}$\\
-        %         $\beta_{I(t)}\rightarrow \beta_{I(t)} + 1 - r_{I(t)}$\\
-        %         $count(C(t))\leftarrow count(C(t)) + 1$\\
-        %         $\theta(C(t))\leftarrow \theta(C(t)) + \frac{1}{count(C(t))[r_{I(t)}-\theta(C(t))]}$\\
-        %     }
-        %     \caption{Dependent TS}
-        %   \end{algorithm}
+        The specific algorithm we used is shown on the next page.\\
+        \begin{algorithm}[H]
+            \SetAlgoLined
+            Input: pseudo-rewards $s_{l,k}(r)$\\
+            Initialize: 
+            
+            \caption{Dependent UCB}
+          \end{algorithm}
         \item[*7.] reference reading:
         \begin{enumerate}[1]
             \item https://zhuanlan.zhihu.com/p/84140092, https://zhuanlan.zhihu.com/p/84200578, \\
