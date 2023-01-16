@@ -320,7 +320,7 @@
             If this value is less than the largest estimated theta value so far, then this arm l is not competitive. Note that the $\phi$ value changes at each round so arm l is not eliminated forever.
             Denote the set of all competitive arms to be $A_t$\\
             \textbf{Step 3: Use bandit algorithm on $A_t\cup C_t$} According to the steps above, $A_t\cup C_t$ is the set of all competitive arms at round t.\\
-            \textbf{Step 4:After pull} After pull the chosen arm k, we get a reward r(sampled from test data since dependent relation should be consistent.), then we will go to the pseudo-reward table(got when from processing train data before) to update the empirical pseudo-reward of k contributed to other arms. Other things like estimated theta, count will also be updated.
+            \textbf{Step 4:After pull} After pull the chosen arm k, we get a reward r(sampled from test data since dependent relation should be consistent.), then we will go to the pseudo-reward table(got from processing train data before) to update the empirical pseudo-reward of k contributed to other arms. Other things like estimated theta, count will also be updated.
 
         \end{enumerate}
         The specific algorithm we used is shown below. UCB index here is $\theta+c\cdot \sqrt{\frac{2log(t)}{count}}$ for each arm, as we known\\
