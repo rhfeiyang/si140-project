@@ -17,16 +17,14 @@ class Loader:
         self.load_data(path_train,path_test)
 
     def load_data(self,path_train, path_test):
-        self.train_data=pd.read_csv(path_train)
-        self.test_data=pd.read_csv(path_test)
+        self.train_data=pd.read_csv(path_train, low_memory=False)
+        self.test_data=pd.read_csv(path_test, low_memory=False)
         if 'arm1' in self.train_data.columns.values:
             self.load_data_gen()
         else:
             self.load_data_movie()
 
     def load_data_gen(self):
-        path=self.path_train
-        self.train_data = pd.read_csv(path)
         self.arm_num = self.train_data.columns.size
         self.range= self.train_data[self.train_data.columns[0]].max() - self.train_data[self.train_data.columns[0]].min()
         self.r_mid= float(self.train_data[self.train_data.columns[0]].max() + self.train_data[self.train_data.columns[0]].min()) / 2
@@ -73,9 +71,9 @@ class Loader:
         self.sampler =self.sample_movie
 
     def sample_movie(self,choose):
-        v= self.train_data[self.train_data['genre_col'] == choose]['Rating'].sample(n=1, replace=True)
+        v= self.test_data[self.test_data['genre_col'] == choose]['Rating'].sample(n=1, replace=True)
         return v.values[0]
 
     def sample_gen(self, choose):
-        reward = self.train_data[self.train_data.columns[choose]].sample(n=1, replace=True)
+        reward = self.test_data[self.test_data.columns[choose]].sample(n=1, replace=True)
         return reward.values[0]
